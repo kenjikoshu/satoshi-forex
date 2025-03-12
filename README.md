@@ -2,6 +2,8 @@
 
 A single-page website that ranks Bitcoin (in Satoshis, SATS), Gold (XAU), Silver (XAG), and top fiat currencies based on economic size, using market cap for Bitcoin, Gold, and Silver, and GDP for fiat currencies.
 
+This project was built using the ansh template-2 as a foundation and was generated with assistance from Cursor.ai.
+
 ## Features
 
 - **Real-time Bitcoin Data**: Fetches current Bitcoin price and market cap from CoinGecko API
@@ -128,3 +130,13 @@ Cached data is stored in the `cache/` directory and is automatically refreshed w
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- [CoinGecko](https://www.coingecko.com/) for providing cryptocurrency data
+- [International Monetary Fund](https://www.imf.org/) for GDP data
+- [Next.js](https://nextjs.org/) for the React framework
+- [TailwindCSS](https://tailwindcss.com/) for the styling framework
+- [html2canvas](https://html2canvas.hertzen.com/) for image generation capabilities
+- [ansh template-2](https://github.com/ansh/template-2) for the project foundation
+- [Cursor.ai](https://cursor.sh/) for AI-assisted development
