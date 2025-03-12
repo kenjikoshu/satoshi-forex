@@ -14,6 +14,11 @@ import {
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
+// Helper function for consistent client-side error logging
+function clientError(...args: any[]) {
+  console.error('[CLIENT ERROR]', ...args);
+}
+
 // Auth functions
 export const logoutUser = () => signOut(auth);
 
@@ -23,7 +28,7 @@ export const signInWithGoogle = async () => {
     const result = await signInWithPopup(auth, provider);
     return result.user;
   } catch (error) {
-    console.error("Error signing in with Google", error);
+    clientError("Error signing in with Google", error);
     throw error;
   }
 };

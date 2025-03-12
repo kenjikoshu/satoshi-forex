@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import OpenAI from "openai";
 
+// Helper function for server-side error logging
+function serverError(...args: any[]) {
+  console.error('[SERVER]', ...args);
+}
+
 const openai = new OpenAI();
 
 export async function POST(req: Request) {
@@ -32,7 +37,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error processing audio:", error);
+    serverError("Error processing audio:", error);
     return NextResponse.error();
   }
 }

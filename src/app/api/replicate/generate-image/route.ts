@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import Replicate from "replicate";
 
+// Helper function for server-side error logging
+function serverError(...args: any[]) {
+  console.error('[SERVER]', ...args);
+}
+
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
 });
@@ -31,7 +36,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ output }, { status: 200 });
   } catch (error) {
-    console.error("Error from Replicate API:", error);
+    serverError("Error from Replicate API:", error);
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
   }
 }

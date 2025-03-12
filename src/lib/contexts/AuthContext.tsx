@@ -19,6 +19,11 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
 });
 
+// Helper function for consistent client-side error logging
+function clientError(...args: any[]) {
+  console.error('[CLIENT ERROR]', ...args);
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await signInWithPopup(auth, provider);
     } catch (error) {
-      console.error("Error signing in with Google", error);
+      clientError("Error signing in with Google", error);
     }
   };
 
@@ -45,7 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await firebaseSignOut(auth);
     } catch (error) {
-      console.error("Error signing out", error);
+      clientError("Error signing out", error);
     }
   };
 

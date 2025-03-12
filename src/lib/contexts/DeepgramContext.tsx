@@ -11,6 +11,15 @@ import {
 
 import { createContext, useContext, useState, ReactNode, FunctionComponent, useRef } from "react";
 
+// Helper functions for consistent client-side logging
+function clientLog(...args: any[]) {
+  console.log('[CLIENT]', ...args);
+}
+
+function clientError(...args: any[]) {
+  console.error('[CLIENT ERROR]', ...args);
+}
+
 interface DeepgramContextType {
   connectToDeepgram: () => Promise<void>;
   disconnectFromDeepgram: () => void;
@@ -47,12 +56,12 @@ const DeepgramContextProvider: FunctionComponent<DeepgramContextProviderProps> =
 
       const apiKey = await getApiKey();
 
-      console.log("Opening WebSocket connection...");
+      clientLog("Opening WebSocket connection...");
       const socket = new WebSocket("wss://api.deepgram.com/v1/listen", ["token", apiKey]);
 
       socket.onopen = () => {
         setConnectionState(SOCKET_STATES.open);
-        console.log("WebSocket connection opened");
+        clientLog("WebSocket connection opened");
         audioRef.current!.addEventListener("dataavailable", (event) => {
           if (event.data.size > 0 && socket.readyState === WebSocket.OPEN) {
             socket.send(event.data);
@@ -71,19 +80,19 @@ const DeepgramContextProvider: FunctionComponent<DeepgramContextProviderProps> =
       };
 
       socket.onerror = (error) => {
-        console.error("WebSocket error:", error);
+        clientError("WebSocket error:", error);
         setError("Error connecting to Deepgram. Please try again.");
         disconnectFromDeepgram();
       };
 
       socket.onclose = (event) => {
         setConnectionState(SOCKET_STATES.closed);
-        console.log("WebSocket connection closed:", event.code, event.reason);
+        clientLog("WebSocket connection closed:", event.code, event.reason);
       };
 
       setConnection(socket);
     } catch (error) {
-      console.error("Error starting voice recognition:", error);
+      clientError("Error starting voice recognition:", error);
       setError(error instanceof Error ? error.message : "An unknown error occurred");
       setConnectionState(SOCKET_STATES.closed);
     }

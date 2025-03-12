@@ -1,0 +1,894 @@
+{
+  "timestamp": 1741794209174,
+  "year": "2024",
+  "data": {
+    "SDN": {
+      "label": "Sudan",
+      "gdp": 29.793
+    },
+    "SLV": {
+      "label": "El Salvador",
+      "gdp": 35.848
+    },
+    "EST": {
+      "label": "Estonia",
+      "gdp": 43.044
+    },
+    "SWZ": {
+      "label": "Eswatini",
+      "gdp": 5.145
+    },
+    "FJI": {
+      "label": "Fiji",
+      "gdp": 5.773
+    },
+    "FIN": {
+      "label": "Finland",
+      "gdp": 306.083
+    },
+    "GAB": {
+      "label": "Gabon",
+      "gdp": 20.897
+    },
+    "GEO": {
+      "label": "Georgia",
+      "gdp": 33.191
+    },
+    "GRC": {
+      "label": "Greece",
+      "gdp": 252.732
+    },
+    "GIN": {
+      "label": "Guinea",
+      "gdp": 25.474
+    },
+    "HTI": {
+      "label": "Haiti",
+      "gdp": 26.274
+    },
+    "HND": {
+      "label": "Honduras",
+      "gdp": 36.735
+    },
+    "HUN": {
+      "label": "Hungary",
+      "gdp": 228.806
+    },
+    "ISL": {
+      "label": "Iceland",
+      "gdp": 32.919
+    },
+    "BGR": {
+      "label": "Bulgaria",
+      "gdp": 108.425
+    },
+    "BFA": {
+      "label": "Burkina Faso",
+      "gdp": 21.858
+    },
+    "KHM": {
+      "label": "Cambodia",
+      "gdp": 47.147
+    },
+    "CAF": {
+      "label": "Central African Republic",
+      "gdp": 2.823
+    },
+    "CHN": {
+      "label": "China, People's Republic of",
+      "gdp": 18273.357
+    },
+    "COL": {
+      "label": "Colombia",
+      "gdp": 417.207
+    },
+    "COD": {
+      "label": "Congo, Dem. Rep. of the",
+      "gdp": 72.483
+    },
+    "CRI": {
+      "label": "Costa Rica",
+      "gdp": 95.149
+    },
+    "HRV": {
+      "label": "Croatia",
+      "gdp": 89.665
+    },
+    "CYP": {
+      "label": "Cyprus",
+      "gdp": 34.79
+    },
+    "DNK": {
+      "label": "Denmark",
+      "gdp": 412.293
+    },
+    "DOM": {
+      "label": "Dominican Republic",
+      "gdp": 126.238
+    },
+    "WE": {
+      "label": "WE",
+      "gdp": 6728.466
+    },
+    "WEOWORLD": {
+      "label": "WEOWORLD",
+      "gdp": 110064.915
+    },
+    "EU": {
+      "label": "EU",
+      "gdp": 19403.162
+    },
+    "BRN": {
+      "label": "Brunei Darussalam",
+      "gdp": 15.71
+    },
+    "GNQ": {
+      "label": "Equatorial Guinea",
+      "gdp": 12.884
+    },
+    "ITA": {
+      "label": "Italy",
+      "gdp": 2376.51
+    },
+    "JAM": {
+      "label": "Jamaica",
+      "gdp": 20.586
+    },
+    "MEX": {
+      "label": "Mexico",
+      "gdp": 1848.125
+    },
+    "PRI": {
+      "label": "Puerto Rico",
+      "gdp": 120.971
+    },
+    "QAT": {
+      "label": "Qatar",
+      "gdp": 221.406
+    },
+    "CHE": {
+      "label": "Switzerland",
+      "gdp": 942.265
+    },
+    "MAE": {
+      "label": "MAE",
+      "gdp": 49300.856
+    },
+    "OAE": {
+      "label": "OAE",
+      "gdp": 9183.356
+    },
+    "EDE": {
+      "label": "EDE",
+      "gdp": 5556.849
+    },
+    "OEMDC": {
+      "label": "OEMDC",
+      "gdp": 45383.206
+    },
+    "MECA": {
+      "label": "MECA",
+      "gdp": 4980.028
+    },
+    "SSA": {
+      "label": "SSA",
+      "gdp": 1840.998
+    },
+    "AND": {
+      "label": "Andorra",
+      "gdp": 3.93
+    },
+    "AGO": {
+      "label": "Angola",
+      "gdp": 113.286
+    },
+    "ARG": {
+      "label": "Argentina",
+      "gdp": 604.382
+    },
+    "ARM": {
+      "label": "Armenia",
+      "gdp": 25.251
+    },
+    "AUS": {
+      "label": "Australia",
+      "gdp": 1802.006
+    },
+    "AUT": {
+      "label": "Austria",
+      "gdp": 535.804
+    },
+    "BGD": {
+      "label": "Bangladesh",
+      "gdp": 451.468
+    },
+    "BEL": {
+      "label": "Belgium",
+      "gdp": 662.183
+    },
+    "BTN": {
+      "label": "Bhutan",
+      "gdp": 3.151
+    },
+    "BOL": {
+      "label": "Bolivia",
+      "gdp": 48.172
+    },
+    "BWA": {
+      "label": "Botswana",
+      "gdp": 19.966
+    },
+    "BRA": {
+      "label": "Brazil",
+      "gdp": 2188.419
+    },
+    "TUN": {
+      "label": "Tunisia",
+      "gdp": 52.636
+    },
+    "TUR": {
+      "label": "Türkiye, Republic of",
+      "gdp": 1344.318
+    },
+    "UGA": {
+      "label": "Uganda",
+      "gdp": 55.587
+    },
+    "GBR": {
+      "label": "United Kingdom",
+      "gdp": 3587.545
+    },
+    "UZB": {
+      "label": "Uzbekistan",
+      "gdp": 112.653
+    },
+    "VNM": {
+      "label": "Vietnam",
+      "gdp": 468.485
+    },
+    "ZMB": {
+      "label": "Zambia",
+      "gdp": 25.913
+    },
+    "ZWE": {
+      "label": "Zimbabwe",
+      "gdp": 35.919
+    },
+    "ADVEC": {
+      "label": "ADVEC",
+      "gdp": 64681.709
+    },
+    "EURO": {
+      "label": "EURO",
+      "gdp": 16370.212
+    },
+    "AS5": {
+      "label": "AS5",
+      "gdp": 3372.027
+    },
+    "DA": {
+      "label": "DA",
+      "gdp": 26276.864
+    },
+    "TJK": {
+      "label": "Tajikistan",
+      "gdp": 12.995
+    },
+    "TZA": {
+      "label": "Tanzania",
+      "gdp": 79.867
+    },
+    "GMB": {
+      "label": "Gambia, The",
+      "gdp": 2.693
+    },
+    "TTO": {
+      "label": "Trinidad and Tobago",
+      "gdp": 28.139
+    },
+    "TKM": {
+      "label": "Turkmenistan",
+      "gdp": 83.883
+    },
+    "TUV": {
+      "label": "Tuvalu",
+      "gdp": 0.073
+    },
+    "UKR": {
+      "label": "Ukraine",
+      "gdp": 184.099
+    },
+    "ARE": {
+      "label": "United Arab Emirates",
+      "gdp": 545.053
+    },
+    "USA": {
+      "label": "United States",
+      "gdp": 29167.779
+    },
+    "URY": {
+      "label": "Uruguay",
+      "gdp": 82.482
+    },
+    "VUT": {
+      "label": "Vanuatu",
+      "gdp": 1.169
+    },
+    "VEN": {
+      "label": "Venezuela",
+      "gdp": 106.327
+    },
+    "YEM": {
+      "label": "Yemen",
+      "gdp": 16.192
+    },
+    "SVK": {
+      "label": "Slovak Republic",
+      "gdp": 142.617
+    },
+    "SOM": {
+      "label": "Somalia",
+      "gdp": 12.729
+    },
+    "ZAF": {
+      "label": "South Africa",
+      "gdp": 403.045
+    },
+    "ESP": {
+      "label": "Spain",
+      "gdp": 1731.469
+    },
+    "LCA": {
+      "label": "Saint Lucia",
+      "gdp": 2.569
+    },
+    "VCT": {
+      "label": "Saint Vincent and the Grenadines",
+      "gdp": 1.173
+    },
+    "SWE": {
+      "label": "Sweden",
+      "gdp": 609.039
+    },
+    "TWN": {
+      "label": "Taiwan Province of China",
+      "gdp": 775.017
+    },
+    "THA": {
+      "label": "Thailand",
+      "gdp": 528.919
+    },
+    "BHS": {
+      "label": "Bahamas, The",
+      "gdp": 14.825
+    },
+    "TGO": {
+      "label": "Togo",
+      "gdp": 9.766
+    },
+    "TON": {
+      "label": "Tonga",
+      "gdp": 0.545
+    },
+    "RUS": {
+      "label": "Russian Federation",
+      "gdp": 2184.316
+    },
+    "SMR": {
+      "label": "San Marino",
+      "gdp": 2.049
+    },
+    "SEN": {
+      "label": "Senegal",
+      "gdp": 33.685
+    },
+    "SRB": {
+      "label": "Serbia",
+      "gdp": 82.55
+    },
+    "SLE": {
+      "label": "Sierra Leone",
+      "gdp": 7.411
+    },
+    "SGP": {
+      "label": "Singapore",
+      "gdp": 530.708
+    },
+    "SVN": {
+      "label": "Slovenia",
+      "gdp": 73.198
+    },
+    "SLB": {
+      "label": "Solomon Islands",
+      "gdp": 1.73
+    },
+    "SSD": {
+      "label": "South Sudan, Republic of",
+      "gdp": 5.268
+    },
+    "KNA": {
+      "label": "Saint Kitts and Nevis",
+      "gdp": 1.158
+    },
+    "SUR": {
+      "label": "Suriname",
+      "gdp": 4.918
+    },
+    "NOR": {
+      "label": "Norway",
+      "gdp": 503.752
+    },
+    "OMN": {
+      "label": "Oman",
+      "gdp": 109.993
+    },
+    "PAN": {
+      "label": "Panama",
+      "gdp": 87.347
+    },
+    "PER": {
+      "label": "Peru",
+      "gdp": 283.309
+    },
+    "PRT": {
+      "label": "Portugal",
+      "gdp": 303.032
+    },
+    "COG": {
+      "label": "Congo, Republic of ",
+      "gdp": 15.044
+    },
+    "ROU": {
+      "label": "Romania",
+      "gdp": 380.561
+    },
+    "RWA": {
+      "label": "Rwanda",
+      "gdp": 13.663
+    },
+    "WSM": {
+      "label": "Samoa",
+      "gdp": 1.068
+    },
+    "STP": {
+      "label": "São Tomé and Príncipe",
+      "gdp": 0.812
+    },
+    "SAU": {
+      "label": "Saudi Arabia",
+      "gdp": 1100.706
+    },
+    "SYC": {
+      "label": "Seychelles",
+      "gdp": 2.144
+    },
+    "MNG": {
+      "label": "Mongolia",
+      "gdp": 23.669
+    },
+    "MNE": {
+      "label": "Montenegro",
+      "gdp": 8.11
+    },
+    "MOZ": {
+      "label": "Mozambique",
+      "gdp": 22.495
+    },
+    "MMR": {
+      "label": "Myanmar",
+      "gdp": 64.284
+    },
+    "NRU": {
+      "label": "Nauru",
+      "gdp": 0.16
+    },
+    "NPL": {
+      "label": "Nepal",
+      "gdp": 43.673
+    },
+    "NIC": {
+      "label": "Nicaragua",
+      "gdp": 19.412
+    },
+    "MKD": {
+      "label": "North Macedonia ",
+      "gdp": 15.861
+    },
+    "PAK": {
+      "label": "Pakistan",
+      "gdp": 374.595
+    },
+    "PLW": {
+      "label": "Palau",
+      "gdp": 0.316
+    },
+    "PNG": {
+      "label": "Papua New Guinea",
+      "gdp": 31.896
+    },
+    "PRY": {
+      "label": "Paraguay",
+      "gdp": 44.937
+    },
+    "PHL": {
+      "label": "Philippines",
+      "gdp": 470.062
+    },
+    "POL": {
+      "label": "Poland",
+      "gdp": 862.908
+    },
+    "MWI": {
+      "label": "Malawi",
+      "gdp": 10.844
+    },
+    "MLI": {
+      "label": "Mali",
+      "gdp": 21.653
+    },
+    "MLT": {
+      "label": "Malta",
+      "gdp": 24.397
+    },
+    "MRT": {
+      "label": "Mauritania",
+      "gdp": 10.761
+    },
+    "MUS": {
+      "label": "Mauritius",
+      "gdp": 15.89
+    },
+    "FSM": {
+      "label": "Micronesia, Fed. States of",
+      "gdp": 0.484
+    },
+    "MDA": {
+      "label": "Moldova",
+      "gdp": 18.062
+    },
+    "MAR": {
+      "label": "Morocco",
+      "gdp": 157.087
+    },
+    "NAM": {
+      "label": "Namibia",
+      "gdp": 13.185
+    },
+    "NLD": {
+      "label": "Netherlands",
+      "gdp": 1218.401
+    },
+    "NZL": {
+      "label": "New Zealand",
+      "gdp": 252.236
+    },
+    "NER": {
+      "label": "Niger",
+      "gdp": 19.599
+    },
+    "NGA": {
+      "label": "Nigeria",
+      "gdp": 199.721
+    },
+    "JOR": {
+      "label": "Jordan",
+      "gdp": 53.305
+    },
+    "KAZ": {
+      "label": "Kazakhstan",
+      "gdp": 292.553
+    },
+    "KOR": {
+      "label": "Korea, Republic of",
+      "gdp": 1869.916
+    },
+    "KGZ": {
+      "label": "Kyrgyz Republic",
+      "gdp": 15.774
+    },
+    "LBY": {
+      "label": "Libya",
+      "gdp": 44.812
+    },
+    "LTU": {
+      "label": "Lithuania",
+      "gdp": 82.789
+    },
+    "MAC": {
+      "label": "Macao SAR",
+      "gdp": 53.447
+    },
+    "MDG": {
+      "label": "Madagascar",
+      "gdp": 17.212
+    },
+    "MYS": {
+      "label": "Malaysia",
+      "gdp": 439.748
+    },
+    "MDV": {
+      "label": "Maldives",
+      "gdp": 6.984
+    },
+    "MHL": {
+      "label": "Marshall Islands",
+      "gdp": 0.279
+    },
+    "ALB": {
+      "label": "Albania",
+      "gdp": 26.13
+    },
+    "DZA": {
+      "label": "Algeria",
+      "gdp": 260.134
+    },
+    "ATG": {
+      "label": "Antigua and Barbuda",
+      "gdp": 2.292
+    },
+    "ABW": {
+      "label": "Aruba",
+      "gdp": 4.258
+    },
+    "AZE": {
+      "label": "Azerbaijan",
+      "gdp": 75.649
+    },
+    "BHR": {
+      "label": "Bahrain",
+      "gdp": 47.812
+    },
+    "BRB": {
+      "label": "Barbados",
+      "gdp": 7.201
+    },
+    "BLR": {
+      "label": "Belarus",
+      "gdp": 73.129
+    },
+    "BLZ": {
+      "label": "Belize",
+      "gdp": 3.342
+    },
+    "BEN": {
+      "label": "Benin",
+      "gdp": 21.322
+    },
+    "BIH": {
+      "label": "Bosnia and Herzegovina",
+      "gdp": 28.404
+    },
+    "ETH": {
+      "label": "Ethiopia",
+      "gdp": 145.031
+    },
+    "FRA": {
+      "label": "France",
+      "gdp": 3174.099
+    },
+    "DEU": {
+      "label": "Germany",
+      "gdp": 4710.032
+    },
+    "GHA": {
+      "label": "Ghana",
+      "gdp": 75.307
+    },
+    "GRD": {
+      "label": "Grenada",
+      "gdp": 1.393
+    },
+    "GTM": {
+      "label": "Guatemala",
+      "gdp": 112.369
+    },
+    "GNB": {
+      "label": "Guinea-Bissau",
+      "gdp": 2.188
+    },
+    "GUY": {
+      "label": "Guyana",
+      "gdp": 23.033
+    },
+    "HKG": {
+      "label": "Hong Kong SAR",
+      "gdp": 401.751
+    },
+    "IND": {
+      "label": "India",
+      "gdp": 3889.13
+    },
+    "IRQ": {
+      "label": "Iraq",
+      "gdp": 264.149
+    },
+    "IRL": {
+      "label": "Ireland",
+      "gdp": 560.566
+    },
+    "IDN": {
+      "label": "Indonesia",
+      "gdp": 1402.59
+    },
+    "IRN": {
+      "label": "Iran",
+      "gdp": 434.243
+    },
+    "ISR": {
+      "label": "Israel",
+      "gdp": 528.067
+    },
+    "JPN": {
+      "label": "Japan",
+      "gdp": 4070.094
+    },
+    "KEN": {
+      "label": "Kenya",
+      "gdp": 116.321
+    },
+    "KIR": {
+      "label": "Kiribati",
+      "gdp": 0.312
+    },
+    "UVK": {
+      "label": "Kosovo",
+      "gdp": 11.172
+    },
+    "KWT": {
+      "label": "Kuwait",
+      "gdp": 161.822
+    },
+    "LAO": {
+      "label": "Lao P.D.R.",
+      "gdp": 14.949
+    },
+    "LVA": {
+      "label": "Latvia",
+      "gdp": 45.521
+    },
+    "LSO": {
+      "label": "Lesotho",
+      "gdp": 2.297
+    },
+    "LBR": {
+      "label": "Liberia",
+      "gdp": 4.756
+    },
+    "LUX": {
+      "label": "Luxembourg",
+      "gdp": 91.21
+    },
+    "BDI": {
+      "label": "Burundi",
+      "gdp": 4.285
+    },
+    "CPV": {
+      "label": "Cabo Verde",
+      "gdp": 2.756
+    },
+    "CMR": {
+      "label": "Cameroon",
+      "gdp": 53.391
+    },
+    "CAN": {
+      "label": "Canada",
+      "gdp": 2214.796
+    },
+    "TCD": {
+      "label": "Chad",
+      "gdp": 18.67
+    },
+    "CHL": {
+      "label": "Chile",
+      "gdp": 328.72
+    },
+    "COM": {
+      "label": "Comoros",
+      "gdp": 1.45
+    },
+    "CIV": {
+      "label": "Côte d'Ivoire",
+      "gdp": 86.993
+    },
+    "CZE": {
+      "label": "Czech Republic",
+      "gdp": 342.992
+    },
+    "TLS": {
+      "label": "Timor-Leste",
+      "gdp": 1.992
+    },
+    "DJI": {
+      "label": "Djibouti",
+      "gdp": 4.334
+    },
+    "DMA": {
+      "label": "Dominica",
+      "gdp": 0.703
+    },
+    "ECU": {
+      "label": "Ecuador",
+      "gdp": 121.425
+    },
+    "EGY": {
+      "label": "Egypt",
+      "gdp": 380.044
+    },
+    "AFQ": {
+      "label": "AFQ",
+      "gdp": 2780.597
+    },
+    "SSQ": {
+      "label": "SSQ",
+      "gdp": 1885.886
+    },
+    "APQ": {
+      "label": "APQ",
+      "gdp": 38348.143
+    },
+    "AZQ": {
+      "label": "AZQ",
+      "gdp": 2054.243
+    },
+    "CBQ": {
+      "label": "CBQ",
+      "gdp": 141.863
+    },
+    "CMQ": {
+      "label": "CMQ",
+      "gdp": 513.099
+    },
+    "CAQ": {
+      "label": "CAQ",
+      "gdp": 1996.266
+    },
+    "EAQ": {
+      "label": "EAQ",
+      "gdp": 25413.804
+    },
+    "EEQ": {
+      "label": "EEQ",
+      "gdp": 5021.184
+    },
+    "EUQ": {
+      "label": "EUQ",
+      "gdp": 27096.28
+    },
+    "MEQ": {
+      "label": "MEQ",
+      "gdp": 3529.223
+    },
+    "NAQ": {
+      "label": "NAQ",
+      "gdp": 894.711
+    },
+    "NMQ": {
+      "label": "NMQ",
+      "gdp": 33351.671
+    },
+    "PIQ": {
+      "label": "PIQ",
+      "gdp": 42.494
+    },
+    "SMQ": {
+      "label": "SMQ",
+      "gdp": 4225.38
+    },
+    "SAQ": {
+      "label": "SAQ",
+      "gdp": 4856.741
+    },
+    "SEQ": {
+      "label": "SEQ",
+      "gdp": 3984.595
+    },
+    "WEQ": {
+      "label": "WEQ",
+      "gdp": 22075.096
+    },
+    "WHQ": {
+      "label": "WHQ",
+      "gdp": 38232.012
+    }
+  }
+}
