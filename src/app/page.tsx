@@ -854,7 +854,7 @@ export default function Home() {
             Ranking Bitcoin, Metals, and Top {TOP_CURRENCIES_LIMIT} Currencies
           </p>
           <p className="text-md md:text-lg text-gray-500 mt-2">
-            See how Satoshis stack up against Gold, Silver, and the world's top economies!
+            See how Satoshis stack up against Gold, Silver, and the world&apos;s top economies!
           </p>
         </header>
         
@@ -900,7 +900,7 @@ export default function Home() {
               <div className="mb-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700">
                 <p className="font-medium">Some data sources are unavailable</p>
                 <p className="text-sm">
-                  There were issues connecting to some of our data sources. We're showing the data we could retrieve.
+                  There were issues connecting to some of our data sources. We&apos;re showing the data we could retrieve.
                 </p>
                 <details className="mt-2 text-xs">
                   <summary className="cursor-pointer font-medium">View data source details</summary>
@@ -921,7 +921,7 @@ export default function Home() {
               <div className="mb-4 p-4 bg-blue-50 border-l-4 border-blue-400 text-blue-700">
                 <p className="font-medium">Using cached Bitcoin price data</p>
                 <p className="text-sm">
-                  We couldn't fetch the latest Bitcoin prices from our data provider. The prices shown may not reflect current market conditions.
+                  We couldn&apos;t fetch the latest Bitcoin prices from our data provider. The prices shown may not reflect current market conditions.
                 </p>
               </div>
             )}
@@ -992,7 +992,7 @@ export default function Home() {
           <p className="text-gray-700 mb-4">
             Why GDP and Market Cap? We rank fiat by GDP and Bitcoin, Gold, and Silver by market cap for a fair comparison. 
             The table shows Bitcoin, Gold, Silver, and the top {TOP_CURRENCIES_LIMIT} currencies by GDP.
-            GDP data is sourced from the IMF's World Economic Outlook database.
+            GDP data is sourced from the IMF&apos;s World Economic Outlook database.
           </p>
           
           <div className="bg-blue-50 p-4 rounded-lg">
