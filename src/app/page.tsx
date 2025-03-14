@@ -444,26 +444,33 @@ export default function Home() {
             // Track Eurozone countries and their GDP
             let eurozoneCountriesFound = 0;
             
+            // Get the Eurozone countries from the API response
+            const eurozoneCountries = imfResponse.eurozoneCountries || [];
+            debugLog(`Eurozone countries from API: ${eurozoneCountries.join(', ')}`);
+            
+            // Helper function to check if a country is in the Eurozone using the API data
+            const isEurozoneCountryFromApi = (code: string) => eurozoneCountries.includes(code);
+            
             // Loop through each country in the data object
-            for (const [countryCode, countryData] of Object.entries(imfResponse.data)) {
+            for (const [countryCode, gdpValue] of Object.entries(imfResponse.data)) {
               // Check if this is a Eurozone country
-              if (isEurozoneCountry(countryCode) && typeof (countryData as any).gdp === 'number') {
-                const gdpValue = (countryData as any).gdp * 1000000000; // Convert from billions to absolute values
-                eurozoneGdpData[countryCode] = gdpValue;
-                totalEurozoneGdp += gdpValue;
+              if (isEurozoneCountryFromApi(countryCode) && typeof gdpValue === 'number') {
+                const gdpValueAbsolute = gdpValue * 1000000000; // Convert from billions to absolute values
+                eurozoneGdpData[countryCode] = gdpValueAbsolute;
+                totalEurozoneGdp += gdpValueAbsolute;
                 eurozoneCountriesFound++;
                 
                 // Log Eurozone country GDP for debugging
-                debugLog(`Eurozone country: ${countryCode} (${(countryData as any).label}) GDP: $${formatNumber(gdpValue)}`);
+                debugLog(`Eurozone country: ${countryCode} GDP: $${formatNumber(gdpValueAbsolute)}`);
               }
               
               const currencyCode = mapCountryCodeToCurrency(countryCode);
-              if (currencyCode && typeof (countryData as any).gdp === 'number') {
+              if (currencyCode && typeof gdpValue === 'number') {
                 // Convert from billions to absolute values (IMF data is in billions)
-                gdpData[currencyCode] = (countryData as any).gdp * 1000000000;
+                gdpData[currencyCode] = gdpValue * 1000000000;
                 
                 // Log country name for debugging
-                debugLog(`Mapped ${countryCode} (${(countryData as any).label}) to currency ${currencyCode}`);
+                debugLog(`Mapped ${countryCode} to currency ${currencyCode}`);
               }
             }
             

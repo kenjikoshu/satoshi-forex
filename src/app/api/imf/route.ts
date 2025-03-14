@@ -21,17 +21,21 @@ const CACHE_DIR = process.env.NODE_ENV === 'production'
   : path.join(process.cwd(), 'cache');
 const GDP_CACHE_FILE = path.join(CACHE_DIR, 'imf_gdp_cache.json');
 
-// Define the cache interface
+// Define the cache interface - simplified to just country code and GDP value
 interface GDPCacheData {
   timestamp: number;
   data: {
-    [countryCode: string]: {
-      label: string;
-      gdp: number;
-    };
+    [countryCode: string]: number; // GDP value
   };
   year: string;
+  eurozoneCountries: string[]; // List of Eurozone country codes
 }
+
+// Eurozone country codes
+const EUROZONE_COUNTRIES = [
+  "AUT", "BEL", "CYP", "EST", "FIN", "FRA", "DEU", "GRC", "IRL", 
+  "ITA", "LVA", "LTU", "LUX", "MLT", "NLD", "PRT", "SVK", "SVN", "ESP"
+];
 
 // Ensure cache directory exists
 function ensureCacheDirectory() {
@@ -77,54 +81,6 @@ function isCacheValid(cacheData: GDPCacheData): boolean {
   const cacheAge = now - cacheData.timestamp;
   const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
   return cacheAge < sevenDaysInMs;
-}
-
-// Fetch country data from IMF API
-async function fetchCountryData(): Promise<Record<string, string> | null> {
-  try {
-    serverLog('Fetching country data from IMF API');
-    const controller = new AbortController();
-    // Increase timeout for production environment
-    const timeoutMs = process.env.NODE_ENV === 'production' ? 10000 : 5000;
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-    
-    const response = await fetch('https://www.imf.org/external/datamapper/api/v1/countries', {
-      cache: 'no-cache',
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      },
-      signal: controller.signal
-    });
-    
-    clearTimeout(timeoutId);
-    
-    if (!response.ok) {
-      serverError(`IMF API countries response not OK: ${response.status}`);
-      return null;
-    }
-    
-    const data = await response.json();
-    
-    if (!data.countries) {
-      serverError('IMF API countries response does not contain countries key');
-      return null;
-    }
-    
-    // Create a mapping of country codes to country names
-    const countryMap: Record<string, string> = {};
-    for (const [code, details] of Object.entries(data.countries)) {
-      if (typeof details === 'object' && details !== null && 'label' in details) {
-        countryMap[code] = (details as any).label;
-      }
-    }
-    
-    serverLog(`Fetched ${Object.keys(countryMap).length} countries from IMF API`);
-    return countryMap;
-  } catch (error) {
-    serverError('Error fetching country data:', error);
-    return null;
-  }
 }
 
 // Fetch GDP data from IMF API
@@ -217,6 +173,7 @@ export async function GET(request: Request) {
         data: cachedData.data,
         year: cachedData.year,
         timestamp: cachedData.timestamp,
+        eurozoneCountries: cachedData.eurozoneCountries,
         source: 'cache'
       });
     }
@@ -231,20 +188,17 @@ export async function GET(request: Request) {
       setTimeout(() => reject(new Error('API request timed out')), globalTimeoutMs);
     });
     
-    // Fetch country data and GDP data in parallel with a timeout
-    const dataPromise = Promise.all([
-      fetchCountryData(),
-      fetchGdpData(targetYear)
-    ]);
+    // Only fetch GDP data with a timeout
+    const gdpDataPromise = fetchGdpData(targetYear);
     
     // Race between the data fetch and the timeout
-    const [countryData, gdpData] = await Promise.race([
-      dataPromise,
-      timeoutPromise.then(() => [null, null])
-    ]) as [Record<string, string> | null, Record<string, number> | null];
+    const gdpData = await Promise.race([
+      gdpDataPromise,
+      timeoutPromise.then(() => null)
+    ]) as Record<string, number> | null;
     
-    // If either request failed, check for cached data
-    if (!countryData || !gdpData) {
+    // If request failed, check for cached data
+    if (!gdpData) {
       serverWarn('Failed to fetch data from IMF API, checking for cached data');
       
       // Try to get data from cache
@@ -257,6 +211,7 @@ export async function GET(request: Request) {
           data: cachedData.data,
           year: cachedData.year,
           timestamp: cachedData.timestamp,
+          eurozoneCountries: cachedData.eurozoneCountries,
           source: 'cache'
         });
       } else {
@@ -268,20 +223,17 @@ export async function GET(request: Request) {
       }
     }
     
-    // Combine country and GDP data
+    // Create simplified data structure with GDP data
     const combinedData: GDPCacheData = {
       timestamp: Date.now(),
       year: targetYear,
-      data: {}
+      data: {},
+      eurozoneCountries: EUROZONE_COUNTRIES
     };
     
-    // Process each country with GDP data
+    // Process GDP data - just store the GDP values directly
     for (const [countryCode, gdpValue] of Object.entries(gdpData)) {
-      const countryName = countryData[countryCode] || countryCode;
-      combinedData.data[countryCode] = {
-        label: countryName,
-        gdp: gdpValue
-      };
+      combinedData.data[countryCode] = gdpValue;
     }
     
     // Check if we have a reasonable number of countries
@@ -299,6 +251,7 @@ export async function GET(request: Request) {
           data: cachedData.data,
           year: cachedData.year,
           timestamp: cachedData.timestamp,
+          eurozoneCountries: cachedData.eurozoneCountries,
           source: 'cache'
         });
       } else {
@@ -307,6 +260,7 @@ export async function GET(request: Request) {
           data: combinedData.data,
           year: combinedData.year,
           timestamp: combinedData.timestamp,
+          eurozoneCountries: combinedData.eurozoneCountries,
           source: 'IMF API (insufficient data)',
           error: `Only found ${countryCount} countries, which is less than the expected minimum of 20`
         }, { status: 500 });
@@ -322,6 +276,7 @@ export async function GET(request: Request) {
       data: combinedData.data,
       year: combinedData.year,
       timestamp: combinedData.timestamp,
+      eurozoneCountries: combinedData.eurozoneCountries,
       source: 'IMF API'
     });
     
@@ -338,6 +293,7 @@ export async function GET(request: Request) {
         data: cachedData.data,
         year: cachedData.year,
         timestamp: cachedData.timestamp,
+        eurozoneCountries: cachedData.eurozoneCountries,
         source: 'cache (error)',
         error: error instanceof Error ? error.message : String(error)
       });
