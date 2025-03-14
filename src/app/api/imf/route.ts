@@ -192,39 +192,6 @@ async function fetchGdpData(year: string): Promise<Record<string, number> | null
   }
 }
 
-// Fallback data for when API calls fail
-const getFallbackData = (): GDPCacheData => {
-  // Top 20 countries by GDP with 2023 data (in billions USD)
-  const fallbackData: GDPCacheData = {
-    timestamp: Date.now(),
-    year: "2023",
-    data: {
-      "USA": { label: "United States", gdp: 26950.0 },
-      "CHN": { label: "China", gdp: 17700.0 },
-      "JPN": { label: "Japan", gdp: 4230.0 },
-      "DEU": { label: "Germany", gdp: 4430.0 },
-      "IND": { label: "India", gdp: 3730.0 },
-      "GBR": { label: "United Kingdom", gdp: 3330.0 },
-      "FRA": { label: "France", gdp: 3050.0 },
-      "ITA": { label: "Italy", gdp: 2190.0 },
-      "BRA": { label: "Brazil", gdp: 2120.0 },
-      "CAN": { label: "Canada", gdp: 2120.0 },
-      "RUS": { label: "Russia", gdp: 2240.0 },
-      "KOR": { label: "South Korea", gdp: 1710.0 },
-      "AUS": { label: "Australia", gdp: 1690.0 },
-      "MEX": { label: "Mexico", gdp: 1770.0 },
-      "ESP": { label: "Spain", gdp: 1580.0 },
-      "IDN": { label: "Indonesia", gdp: 1420.0 },
-      "TUR": { label: "Turkey", gdp: 1150.0 },
-      "NLD": { label: "Netherlands", gdp: 1080.0 },
-      "SAU": { label: "Saudi Arabia", gdp: 1070.0 },
-      "CHE": { label: "Switzerland", gdp: 905.0 }
-    }
-  };
-  
-  return fallbackData;
-};
-
 // Main API handler
 export async function GET(request: Request) {
   try {
@@ -268,20 +235,26 @@ export async function GET(request: Request) {
       timeoutPromise.then(() => [null, null])
     ]) as [Record<string, string> | null, Record<string, number> | null];
     
-    // If either request failed, use fallback data
+    // If either request failed, check for cached data
     if (!countryData || !gdpData) {
-      serverWarn('Failed to fetch data from IMF API, using fallback data');
-      const fallbackData = getFallbackData();
+      serverWarn('Failed to fetch data from IMF API, checking for cached data');
       
-      // Cache the fallback data to prevent repeated failures
-      writeToCache(fallbackData);
+      // Try to get data from cache
+      const cachedData = readFromCache();
       
-      return NextResponse.json({
-        data: fallbackData.data,
-        year: fallbackData.year,
-        timestamp: fallbackData.timestamp,
-        source: 'fallback'
-      });
+      if (cachedData) {
+        serverLog('Using cached IMF data from:', new Date(cachedData.timestamp).toLocaleString());
+        
+        return NextResponse.json({
+          data: cachedData.data,
+          year: cachedData.year,
+          timestamp: cachedData.timestamp,
+          source: 'cache'
+        });
+      } else {
+        // No cache available, return error
+        throw new Error('Failed to fetch from IMF API and no cache available');
+      }
     }
     
     // Combine country and GDP data
@@ -303,18 +276,30 @@ export async function GET(request: Request) {
     // Check if we have a reasonable number of countries
     const countryCount = Object.keys(combinedData.data).length;
     if (countryCount < 20) {
-      serverWarn(`Low country count (${countryCount}), using fallback data`);
-      const fallbackData = getFallbackData();
+      serverWarn(`Low country count (${countryCount}), checking for cached data`);
       
-      // Cache the fallback data
-      writeToCache(fallbackData);
+      // Try to get data from cache
+      const cachedData = readFromCache();
       
-      return NextResponse.json({
-        data: fallbackData.data,
-        year: fallbackData.year,
-        timestamp: fallbackData.timestamp,
-        source: 'fallback (insufficient data)'
-      });
+      if (cachedData) {
+        serverLog('Using cached IMF data from:', new Date(cachedData.timestamp).toLocaleString());
+        
+        return NextResponse.json({
+          data: cachedData.data,
+          year: cachedData.year,
+          timestamp: cachedData.timestamp,
+          source: 'cache'
+        });
+      } else {
+        // No cache available, return error with the insufficient data
+        return NextResponse.json({
+          data: combinedData.data,
+          year: combinedData.year,
+          timestamp: combinedData.timestamp,
+          source: 'IMF API (insufficient data)',
+          error: `Only found ${countryCount} countries, which is less than the expected minimum of 20`
+        }, { status: 500 });
+      }
     }
     
     // Cache the combined data
@@ -332,15 +317,25 @@ export async function GET(request: Request) {
   } catch (error) {
     serverError('Error in IMF API route:', error);
     
-    // Use fallback data in case of any error
-    const fallbackData = getFallbackData();
+    // Check for cached data in case of any error
+    const cachedData = readFromCache();
     
-    return NextResponse.json({
-      data: fallbackData.data,
-      year: fallbackData.year,
-      timestamp: Date.now(),
-      source: 'fallback (error)',
-      error: error instanceof Error ? error.message : String(error)
-    });
+    if (cachedData) {
+      serverLog('Using cached IMF data due to error:', error);
+      
+      return NextResponse.json({
+        data: cachedData.data,
+        year: cachedData.year,
+        timestamp: cachedData.timestamp,
+        source: 'cache (error)',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    } else {
+      // No cache available, return error
+      return NextResponse.json(
+        { error: error instanceof Error ? error.message : 'Unknown error' },
+        { status: 500 }
+      );
+    }
   }
 } 

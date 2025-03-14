@@ -192,6 +192,11 @@ export default function Home() {
   
   // Add state for tracking if we're using cached data
   const [usingCachedCoinGeckoData, setUsingCachedCoinGeckoData] = useState(false);
+  const [usingCachedImfData, setUsingCachedImfData] = useState(false);
+  
+  // Add state for tracking timestamps of cached data
+  const [bitcoinPriceTimestamp, setBitcoinPriceTimestamp] = useState<number>(0);
+  const [gdpDataTimestamp, setGdpDataTimestamp] = useState<number>(0);
   
   // Number of top currencies to display (excluding Bitcoin, Gold, and Silver)
   const TOP_CURRENCIES_LIMIT = 30;
@@ -262,19 +267,15 @@ export default function Home() {
           
           // Check if we're using cached data
           if (coinGeckoResponseData.source === 'cache') {
-            debugLog('⚠️ Using CACHED CoinGecko data from:', new Date(coinGeckoResponseData.timestamp).toLocaleString());
+            debugLog('⚠️ Using CACHED Bitcoin price data');
             setUsingCachedCoinGeckoData(true);
-            setApiErrors(prev => ({
-              ...prev, 
-              bitcoin: {
-                error: 'Could not fetch fresh data from CoinGecko API',
-                source: 'Using cached Bitcoin prices from ' + new Date(coinGeckoResponseData.timestamp).toLocaleString()
-              }
-            }));
           } else {
-            debugLog('✅ Using REAL-TIME CoinGecko data');
+            debugLog('✅ Using REAL Bitcoin price data');
             setUsingCachedCoinGeckoData(false);
           }
+          
+          // Store the timestamp
+          setBitcoinPriceTimestamp(coinGeckoResponseData.timestamp);
           
           const btcData = coinGeckoResponseData.data;
           
@@ -425,11 +426,16 @@ export default function Home() {
           debugLog('IMF data response:', imfResponse);
           
           // Check if we're using cached data
-          if (imfResponse.source === 'cache') {
+          if (imfResponse.source === 'cache' || imfResponse.source === 'cache (error)') {
             debugLog('✅ Using CACHED IMF GDP data from year:', imfResponse.year);
+            setUsingCachedImfData(true);
           } else {
             debugLog('✅ Using REAL IMF GDP data from year:', imfResponse.year);
+            setUsingCachedImfData(false);
           }
+          
+          // Store the timestamp
+          setGdpDataTimestamp(imfResponse.timestamp);
           
           // Process the GDP data
           if (imfResponse.data) {
@@ -922,6 +928,22 @@ export default function Home() {
                 <p className="font-medium">Using cached Bitcoin price data</p>
                 <p className="text-sm">
                   We couldn&apos;t fetch the latest Bitcoin prices from our data provider. The prices shown may not reflect current market conditions.
+                </p>
+                <p className="text-xs mt-1 text-blue-600">
+                  Last updated: {new Date(bitcoinPriceTimestamp).toLocaleString()}
+                </p>
+              </div>
+            )}
+            
+            {/* Cached IMF Data Notification */}
+            {usingCachedImfData && (
+              <div className="mb-4 p-4 bg-blue-50 border-l-4 border-blue-400 text-blue-700">
+                <p className="font-medium">Using cached GDP data</p>
+                <p className="text-sm">
+                  We couldn&apos;t fetch the latest GDP data from the IMF. The economic data shown may not be the most current.
+                </p>
+                <p className="text-xs mt-1 text-blue-600">
+                  Last updated: {new Date(gdpDataTimestamp).toLocaleString()}
                 </p>
               </div>
             )}
