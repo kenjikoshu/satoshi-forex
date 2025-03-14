@@ -48,7 +48,7 @@ function readFromCache(): GDPCacheData | null {
   try {
     if (fs.existsSync(GDP_CACHE_FILE)) {
       const cacheData = JSON.parse(fs.readFileSync(GDP_CACHE_FILE, 'utf-8'));
-      serverLog('Read data from cache, timestamp:', new Date(cacheData.timestamp).toISOString());
+      serverLog('Read data from cache, timestamp:', new Date(cacheData.timestamp).toLocaleString());
       return cacheData;
     }
   } catch (error) {
@@ -62,19 +62,19 @@ function writeToCache(data: GDPCacheData) {
   try {
     ensureCacheDirectory();
     fs.writeFileSync(GDP_CACHE_FILE, JSON.stringify(data, null, 2));
-    serverLog('Wrote data to cache, timestamp:', new Date(data.timestamp).toISOString());
+    serverLog('Wrote data to cache, timestamp:', new Date(data.timestamp).toLocaleString());
     serverLog(`Cached ${Object.keys(data.data).length} countries with GDP data for year ${data.year}`);
   } catch (error) {
     serverError('Error writing to cache:', error);
   }
 }
 
-// Check if cache is valid (less than 24 hours old)
+// Check if cache is valid (less than 7 days old)
 function isCacheValid(cacheData: GDPCacheData): boolean {
   const now = Date.now();
   const cacheAge = now - cacheData.timestamp;
-  const oneDayInMs = 24 * 60 * 60 * 1000;
-  return cacheAge < oneDayInMs;
+  const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+  return cacheAge < sevenDaysInMs;
 }
 
 // Fetch country data from IMF API
@@ -82,7 +82,7 @@ async function fetchCountryData(): Promise<Record<string, string> | null> {
   try {
     serverLog('Fetching country data from IMF API');
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
     
     const response = await fetch('https://www.imf.org/external/datamapper/api/v1/countries', {
       cache: 'no-cache',
@@ -128,7 +128,7 @@ async function fetchGdpData(year: string): Promise<Record<string, number> | null
   try {
     serverLog(`Fetching GDP data from IMF API for year ${year}`);
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
     
     const url = `https://www.imf.org/external/datamapper/api/v1/NGDPD?periods=${year}`;
     serverLog('GDP API URL:', url);
@@ -150,7 +150,6 @@ async function fetchGdpData(year: string): Promise<Record<string, number> | null
     }
     
     const data = await response.json();
-    serverLog('IMF API GDP response structure:', JSON.stringify(data).substring(0, 200) + '...');
     
     if (!data.values) {
       serverError('IMF API GDP response does not contain values key');
@@ -186,18 +185,45 @@ async function fetchGdpData(year: string): Promise<Record<string, number> | null
     const countryCount = Object.keys(gdpValues).length;
     serverLog(`Fetched GDP data for ${countryCount} countries for year ${year}`);
     
-    // Log a sample of the data for debugging
-    const sampleEntries = Object.entries(gdpValues).slice(0, 5);
-    if (sampleEntries.length > 0) {
-      serverLog('Sample GDP data entries:', sampleEntries);
-    }
-    
     return gdpValues;
   } catch (error) {
     serverError('Error fetching GDP data:', error);
     return null;
   }
 }
+
+// Fallback data for when API calls fail
+const getFallbackData = (): GDPCacheData => {
+  // Top 20 countries by GDP with 2023 data (in billions USD)
+  const fallbackData: GDPCacheData = {
+    timestamp: Date.now(),
+    year: "2023",
+    data: {
+      "USA": { label: "United States", gdp: 26950.0 },
+      "CHN": { label: "China", gdp: 17700.0 },
+      "JPN": { label: "Japan", gdp: 4230.0 },
+      "DEU": { label: "Germany", gdp: 4430.0 },
+      "IND": { label: "India", gdp: 3730.0 },
+      "GBR": { label: "United Kingdom", gdp: 3330.0 },
+      "FRA": { label: "France", gdp: 3050.0 },
+      "ITA": { label: "Italy", gdp: 2190.0 },
+      "BRA": { label: "Brazil", gdp: 2120.0 },
+      "CAN": { label: "Canada", gdp: 2120.0 },
+      "RUS": { label: "Russia", gdp: 2240.0 },
+      "KOR": { label: "South Korea", gdp: 1710.0 },
+      "AUS": { label: "Australia", gdp: 1690.0 },
+      "MEX": { label: "Mexico", gdp: 1770.0 },
+      "ESP": { label: "Spain", gdp: 1580.0 },
+      "IDN": { label: "Indonesia", gdp: 1420.0 },
+      "TUR": { label: "Turkey", gdp: 1150.0 },
+      "NLD": { label: "Netherlands", gdp: 1080.0 },
+      "SAU": { label: "Saudi Arabia", gdp: 1070.0 },
+      "CHE": { label: "Switzerland", gdp: 905.0 }
+    }
+  };
+  
+  return fallbackData;
+};
 
 // Main API handler
 export async function GET(request: Request) {
@@ -212,7 +238,7 @@ export async function GET(request: Request) {
     // Check if we have valid cached data
     const cachedData = readFromCache();
     if (cachedData && isCacheValid(cachedData)) {
-      serverLog('Using cached data from', new Date(cachedData.timestamp).toISOString());
+      serverLog('Using cached data from', new Date(cachedData.timestamp).toLocaleString());
       serverLog(`Returning ${Object.keys(cachedData.data).length} countries from cache for year ${cachedData.year}`);
       return NextResponse.json({
         data: cachedData.data,
@@ -225,19 +251,37 @@ export async function GET(request: Request) {
     // If cache is invalid or doesn't exist, fetch fresh data
     serverLog('Cache invalid or not found, fetching fresh data');
     
-    // Fetch country data and GDP data in parallel
-    const [countryData, gdpData] = await Promise.all([
+    // Use Promise.race to implement a global timeout
+    const timeoutPromise = new Promise<null>((_, reject) => {
+      setTimeout(() => reject(new Error('API request timed out')), 8000); // 8 second global timeout
+    });
+    
+    // Fetch country data and GDP data in parallel with a timeout
+    const dataPromise = Promise.all([
       fetchCountryData(),
       fetchGdpData(targetYear)
     ]);
     
-    // If either request failed, return an error
+    // Race between the data fetch and the timeout
+    const [countryData, gdpData] = await Promise.race([
+      dataPromise,
+      timeoutPromise.then(() => [null, null])
+    ]) as [Record<string, string> | null, Record<string, number> | null];
+    
+    // If either request failed, use fallback data
     if (!countryData || !gdpData) {
-      serverError('Failed to fetch data from IMF API');
-      return NextResponse.json(
-        { error: 'Failed to fetch data from IMF API' },
-        { status: 500 }
-      );
+      serverWarn('Failed to fetch data from IMF API, using fallback data');
+      const fallbackData = getFallbackData();
+      
+      // Cache the fallback data to prevent repeated failures
+      writeToCache(fallbackData);
+      
+      return NextResponse.json({
+        data: fallbackData.data,
+        year: fallbackData.year,
+        timestamp: fallbackData.timestamp,
+        source: 'fallback'
+      });
     }
     
     // Combine country and GDP data
@@ -259,11 +303,18 @@ export async function GET(request: Request) {
     // Check if we have a reasonable number of countries
     const countryCount = Object.keys(combinedData.data).length;
     if (countryCount < 20) {
-      serverWarn(`Low country count (${countryCount}), returning error`);
-      return NextResponse.json(
-        { error: `Insufficient data: only found ${countryCount} countries` },
-        { status: 500 }
-      );
+      serverWarn(`Low country count (${countryCount}), using fallback data`);
+      const fallbackData = getFallbackData();
+      
+      // Cache the fallback data
+      writeToCache(fallbackData);
+      
+      return NextResponse.json({
+        data: fallbackData.data,
+        year: fallbackData.year,
+        timestamp: fallbackData.timestamp,
+        source: 'fallback (insufficient data)'
+      });
     }
     
     // Cache the combined data
@@ -281,12 +332,15 @@ export async function GET(request: Request) {
   } catch (error) {
     serverError('Error in IMF API route:', error);
     
-    // Return an error response
-    return NextResponse.json(
-      { 
-        error: error instanceof Error ? error.message : String(error)
-      },
-      { status: 500 }
-    );
+    // Use fallback data in case of any error
+    const fallbackData = getFallbackData();
+    
+    return NextResponse.json({
+      data: fallbackData.data,
+      year: fallbackData.year,
+      timestamp: Date.now(),
+      source: 'fallback (error)',
+      error: error instanceof Error ? error.message : String(error)
+    });
   }
 } 
