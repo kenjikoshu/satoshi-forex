@@ -425,12 +425,13 @@ export default function Home() {
           const imfResponse = await gdpResponse.json();
           debugLog('IMF data response:', imfResponse);
           
-          // Check if we're using cached data
-          if (imfResponse.source === 'cache' || imfResponse.source === 'cache (error)') {
-            debugLog('✅ Using CACHED IMF GDP data from year:', imfResponse.year);
+          // Only show warning for error-based cache, not regular cache
+          if (imfResponse.source === 'cache (error)') {
+            debugLog('⚠️ Using CACHED IMF GDP data due to error from year:', imfResponse.year);
             setUsingCachedImfData(true);
           } else {
-            debugLog('✅ Using REAL IMF GDP data from year:', imfResponse.year);
+            // Normal operation - either fresh data or regular cache
+            debugLog('✅ Using IMF GDP data from year:', imfResponse.year);
             setUsingCachedImfData(false);
           }
           
@@ -444,17 +445,10 @@ export default function Home() {
             // Track Eurozone countries and their GDP
             let eurozoneCountriesFound = 0;
             
-            // Get the Eurozone countries from the API response
-            const eurozoneCountries = imfResponse.eurozoneCountries || [];
-            debugLog(`Eurozone countries from API: ${eurozoneCountries.join(', ')}`);
-            
-            // Helper function to check if a country is in the Eurozone using the API data
-            const isEurozoneCountryFromApi = (code: string) => eurozoneCountries.includes(code);
-            
             // Loop through each country in the data object
             for (const [countryCode, gdpValue] of Object.entries(imfResponse.data)) {
               // Check if this is a Eurozone country
-              if (isEurozoneCountryFromApi(countryCode) && typeof gdpValue === 'number') {
+              if (isEurozoneCountry(countryCode) && typeof gdpValue === 'number') {
                 const gdpValueAbsolute = gdpValue * 1000000000; // Convert from billions to absolute values
                 eurozoneGdpData[countryCode] = gdpValueAbsolute;
                 totalEurozoneGdp += gdpValueAbsolute;
@@ -942,7 +936,7 @@ export default function Home() {
               </div>
             )}
             
-            {/* Cached IMF Data Notification */}
+            {/* Cached IMF Data Notification - Only show when there's an error */}
             {usingCachedImfData && (
               <div className="mb-4 p-4 bg-blue-50 border-l-4 border-blue-400 text-blue-700">
                 <p className="font-medium">Using cached GDP data</p>

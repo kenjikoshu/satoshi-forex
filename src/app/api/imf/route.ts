@@ -28,14 +28,7 @@ interface GDPCacheData {
     [countryCode: string]: number; // GDP value
   };
   year: string;
-  eurozoneCountries: string[]; // List of Eurozone country codes
 }
-
-// Eurozone country codes
-const EUROZONE_COUNTRIES = [
-  "AUT", "BEL", "CYP", "EST", "FIN", "FRA", "DEU", "GRC", "IRL", 
-  "ITA", "LVA", "LTU", "LUX", "MLT", "NLD", "PRT", "SVK", "SVN", "ESP"
-];
 
 // Ensure cache directory exists
 function ensureCacheDirectory() {
@@ -173,7 +166,6 @@ export async function GET(request: Request) {
         data: cachedData.data,
         year: cachedData.year,
         timestamp: cachedData.timestamp,
-        eurozoneCountries: cachedData.eurozoneCountries,
         source: 'cache'
       });
     }
@@ -211,7 +203,6 @@ export async function GET(request: Request) {
           data: cachedData.data,
           year: cachedData.year,
           timestamp: cachedData.timestamp,
-          eurozoneCountries: cachedData.eurozoneCountries,
           source: 'cache'
         });
       } else {
@@ -228,7 +219,6 @@ export async function GET(request: Request) {
       timestamp: Date.now(),
       year: targetYear,
       data: {},
-      eurozoneCountries: EUROZONE_COUNTRIES
     };
     
     // Process GDP data - just store the GDP values directly
@@ -251,7 +241,6 @@ export async function GET(request: Request) {
           data: cachedData.data,
           year: cachedData.year,
           timestamp: cachedData.timestamp,
-          eurozoneCountries: cachedData.eurozoneCountries,
           source: 'cache'
         });
       } else {
@@ -260,7 +249,6 @@ export async function GET(request: Request) {
           data: combinedData.data,
           year: combinedData.year,
           timestamp: combinedData.timestamp,
-          eurozoneCountries: combinedData.eurozoneCountries,
           source: 'IMF API (insufficient data)',
           error: `Only found ${countryCount} countries, which is less than the expected minimum of 20`
         }, { status: 500 });
@@ -276,7 +264,6 @@ export async function GET(request: Request) {
       data: combinedData.data,
       year: combinedData.year,
       timestamp: combinedData.timestamp,
-      eurozoneCountries: combinedData.eurozoneCountries,
       source: 'IMF API'
     });
     
@@ -293,7 +280,6 @@ export async function GET(request: Request) {
         data: cachedData.data,
         year: cachedData.year,
         timestamp: cachedData.timestamp,
-        eurozoneCountries: cachedData.eurozoneCountries,
         source: 'cache (error)',
         error: error instanceof Error ? error.message : String(error)
       });
