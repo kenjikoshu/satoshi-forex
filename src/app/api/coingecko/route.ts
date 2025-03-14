@@ -15,8 +15,10 @@ function serverWarn(...args: any[]) {
   console.warn('[SERVER]', ...args);
 }
 
-// Define the cache file path
-const CACHE_DIR = path.join(process.cwd(), 'cache');
+// Define the cache file path - use /tmp in production (Vercel serverless environment)
+const CACHE_DIR = process.env.NODE_ENV === 'production' 
+  ? path.join('/tmp', 'cache')
+  : path.join(process.cwd(), 'cache');
 const COINGECKO_CACHE_FILE = path.join(CACHE_DIR, 'coingecko_btc_cache.json');
 
 // Define the cache interface

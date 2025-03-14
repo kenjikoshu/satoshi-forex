@@ -15,8 +15,10 @@ function serverWarn(...args: any[]) {
   console.warn('[SERVER]', ...args);
 }
 
-// Define the cache file path
-const CACHE_DIR = path.join(process.cwd(), 'cache');
+// Define the cache file path - use /tmp in production (Vercel serverless environment)
+const CACHE_DIR = process.env.NODE_ENV === 'production' 
+  ? path.join('/tmp', 'cache')
+  : path.join(process.cwd(), 'cache');
 const GDP_CACHE_FILE = path.join(CACHE_DIR, 'imf_gdp_cache.json');
 
 // Define the cache interface
@@ -82,7 +84,9 @@ async function fetchCountryData(): Promise<Record<string, string> | null> {
   try {
     serverLog('Fetching country data from IMF API');
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    // Increase timeout for production environment
+    const timeoutMs = process.env.NODE_ENV === 'production' ? 10000 : 5000;
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     
     const response = await fetch('https://www.imf.org/external/datamapper/api/v1/countries', {
       cache: 'no-cache',
@@ -128,7 +132,9 @@ async function fetchGdpData(year: string): Promise<Record<string, number> | null
   try {
     serverLog(`Fetching GDP data from IMF API for year ${year}`);
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    // Increase timeout for production environment
+    const timeoutMs = process.env.NODE_ENV === 'production' ? 10000 : 5000;
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     
     const url = `https://www.imf.org/external/datamapper/api/v1/NGDPD?periods=${year}`;
     serverLog('GDP API URL:', url);
@@ -220,7 +226,9 @@ export async function GET(request: Request) {
     
     // Use Promise.race to implement a global timeout
     const timeoutPromise = new Promise<null>((_, reject) => {
-      setTimeout(() => reject(new Error('API request timed out')), 8000); // 8 second global timeout
+      // Increase global timeout for production environment
+      const globalTimeoutMs = process.env.NODE_ENV === 'production' ? 15000 : 8000;
+      setTimeout(() => reject(new Error('API request timed out')), globalTimeoutMs);
     });
     
     // Fetch country data and GDP data in parallel with a timeout
@@ -253,7 +261,10 @@ export async function GET(request: Request) {
         });
       } else {
         // No cache available, return error
-        throw new Error('Failed to fetch from IMF API and no cache available');
+        return NextResponse.json(
+          { error: 'Failed to fetch from IMF API and no cache available' },
+          { status: 500 }
+        );
       }
     }
     
