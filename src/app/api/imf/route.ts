@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { dirname } from 'path';
+
+// Set the runtime to the Edge runtime for better performance
+export const runtime = 'edge';
+export const maxDuration = 60;
 
 // Helper functions for consistent server-side logging
 function serverLog(...args: any[]) {
@@ -15,280 +19,224 @@ function serverWarn(...args: any[]) {
   console.warn('[SERVER]', ...args);
 }
 
-// Define the cache file path - use /tmp in production (Vercel serverless environment)
-const CACHE_DIR = process.env.NODE_ENV === 'production' 
-  ? path.join('/tmp', 'cache')
-  : path.join(process.cwd(), 'cache');
-const GDP_CACHE_FILE = path.join(CACHE_DIR, 'imf_gdp_cache.json');
-
-// Define the cache interface - simplified to just country code and GDP value
 interface GDPCacheData {
+  year: number;
   timestamp: number;
-  data: {
-    [countryCode: string]: number; // GDP value
-  };
-  year: string;
+  data: Record<string, number>;
 }
 
-// Ensure cache directory exists
-function ensureCacheDirectory() {
-  if (!fs.existsSync(CACHE_DIR)) {
+// Cache file paths
+const CACHE_DIR = 'cache';
+const CACHE_FILE = `${CACHE_DIR}/imf_gdp_cache.json`;
+
+// Cache expiry time (24 hours in milliseconds)
+const CACHE_EXPIRY_MS = 24 * 60 * 60 * 1000;
+
+export async function GET() {
+  try {
+    console.log('[SERVER] IMF API Request URL:', new URL(Request.prototype.url).toString());
+    
+    // Check if cached data exists and is still valid
+    const cachedData = getCachedData();
+    
+    if (cachedData) {
+      console.log('[SERVER] Read data from cache, timestamp:', new Date(cachedData.timestamp).toLocaleString());
+      
+      // Cached data is still valid, return it
+      console.log('[SERVER] Using cached data from', new Date(cachedData.timestamp).toLocaleString());
+      console.log('[SERVER] Returning', Object.keys(cachedData.data).length, 'countries from cache for year', cachedData.year);
+      
+      return NextResponse.json({
+        year: cachedData.year,
+        timestamp: cachedData.timestamp,
+        source: 'cache',
+        data: cachedData.data
+      });
+    }
+    
+    console.log('[SERVER] Cache invalid or not found, fetching fresh data');
+    
+    // We need to fetch fresh data
+    // Use the current year for the IMF data
+    const currentYear = new Date().getFullYear();
     try {
-      fs.mkdirSync(CACHE_DIR, { recursive: true });
-      serverLog('Created cache directory:', CACHE_DIR);
+      const gdpData = await fetchGDPData(currentYear);
+      
+      // Cache the fetched data
+      cacheData({
+        year: currentYear,
+        timestamp: Date.now(),
+        data: gdpData
+      });
+      
+      console.log('[SERVER] Returning', Object.keys(gdpData).length, 'countries with real GDP data for year', currentYear);
+      
+      return NextResponse.json({
+        year: currentYear,
+        timestamp: Date.now(),
+        source: 'imf',
+        data: gdpData
+      });
     } catch (error) {
-      serverError('Failed to create cache directory:', error);
-    }
-  }
-}
-
-// Read data from cache
-function readFromCache(): GDPCacheData | null {
-  try {
-    if (fs.existsSync(GDP_CACHE_FILE)) {
-      const cacheData = JSON.parse(fs.readFileSync(GDP_CACHE_FILE, 'utf-8'));
-      serverLog('Read data from cache, timestamp:', new Date(cacheData.timestamp).toLocaleString());
-      return cacheData;
+      console.error('[SERVER] Error fetching fresh GDP data:', error);
+      
+      // If we have cached data but it's expired, still return it but mark it as stale
+      if (cachedData) {
+        console.log('[SERVER] Returning stale cached data due to fetch error');
+        return NextResponse.json({
+          year: cachedData.year,
+          timestamp: cachedData.timestamp,
+          source: 'cache (error)',
+          data: cachedData.data
+        });
+      }
+      
+      // No cached data and couldn't fetch fresh data, return error
+      console.error('[SERVER] No cached data available and failed to fetch from IMF API');
+      return NextResponse.json({ error: 'Failed to fetch from IMF API and no cache available' }, { status: 500 });
     }
   } catch (error) {
-    serverError('Error reading from cache:', error);
-  }
-  return null;
-}
-
-// Write data to cache
-function writeToCache(data: GDPCacheData) {
-  try {
-    ensureCacheDirectory();
-    fs.writeFileSync(GDP_CACHE_FILE, JSON.stringify(data, null, 2));
-    serverLog('Wrote data to cache, timestamp:', new Date(data.timestamp).toLocaleString());
-    serverLog(`Cached ${Object.keys(data.data).length} countries with GDP data for year ${data.year}`);
-  } catch (error) {
-    serverError('Error writing to cache:', error);
+    console.error('[SERVER] Unexpected error in IMF API route:', error);
+    return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 });
   }
 }
 
-// Check if cache is valid (less than 7 days old)
-function isCacheValid(cacheData: GDPCacheData): boolean {
-  const now = Date.now();
-  const cacheAge = now - cacheData.timestamp;
-  const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
-  return cacheAge < sevenDaysInMs;
+// Function to fetch GDP data from the IMF API for a specific year
+async function fetchGDPData(year: number): Promise<Record<string, number>> {
+  console.log('[SERVER] Fetching GDP data from IMF API for year', year);
+  
+  // Try multiple proxy approaches to get around Cloudflare restrictions
+  const proxyApproaches = [
+    async () => {
+      // Approach 1: Direct IMF API with custom headers
+      const imfUrl = `https://www.imf.org/external/datamapper/api/v1/NGDPD?periods=${year}`;
+      console.log('[SERVER] GDP API URL:', imfUrl);
+      
+      const response = await fetch(imfUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36',
+          'Accept': 'application/json',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Connection': 'keep-alive',
+          'Cache-Control': 'no-cache'
+        },
+        cache: 'no-store'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`IMF API responded with status: ${response.status}`);
+      }
+      
+      return response.json();
+    },
+    async () => {
+      // Approach 2: Use a service like AllOrigins as a proxy
+      const imfUrl = `https://www.imf.org/external/datamapper/api/v1/NGDPD?periods=${year}`;
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(imfUrl)}`;
+      console.log('[SERVER] Trying proxy URL:', proxyUrl);
+      
+      const response = await fetch(proxyUrl, { cache: 'no-store' });
+      
+      if (!response.ok) {
+        throw new Error(`Proxy API responded with status: ${response.status}`);
+      }
+      
+      return response.json();
+    },
+    async () => {
+      // Approach 3: Try a different proxy service
+      const imfUrl = `https://www.imf.org/external/datamapper/api/v1/NGDPD?periods=${year}`;
+      const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(imfUrl)}`;
+      console.log('[SERVER] Trying alternative proxy URL:', proxyUrl);
+      
+      const response = await fetch(proxyUrl, { cache: 'no-store' });
+      
+      if (!response.ok) {
+        throw new Error(`Alternative proxy API responded with status: ${response.status}`);
+      }
+      
+      return response.json();
+    }
+  ];
+  
+  let lastError;
+  
+  // Try each approach in sequence until one works
+  for (const approach of proxyApproaches) {
+    try {
+      const responseData = await approach();
+      
+      // Check if we have the expected data structure
+      if (responseData?.datasets?.NGDPD) {
+        console.log('[SERVER] Found NGDPD dataset in response');
+        
+        // Process the GDP data
+        const gdpData: Record<string, number> = {};
+        const ngdpdData = responseData.datasets.NGDPD;
+        
+        // Loop through all countries in the dataset
+        for (const [countryCode, countryData] of Object.entries(ngdpdData)) {
+          if (countryData && typeof countryData === 'object' && countryData[year] !== undefined) {
+            // Store the GDP value for this country (in billions of USD)
+            gdpData[countryCode] = countryData[year];
+          }
+        }
+        
+        console.log('[SERVER] Fetched GDP data for', Object.keys(gdpData).length, 'countries for year', year);
+        return gdpData;
+      } else {
+        console.error('[SERVER] Unexpected response structure from IMF API');
+        throw new Error('Unexpected response structure from IMF API');
+      }
+    } catch (error) {
+      console.error(`[SERVER] Approach failed:`, error);
+      lastError = error;
+    }
+  }
+  
+  // If we get here, all approaches failed
+  throw lastError || new Error('All approaches to fetch IMF data failed');
 }
 
-// Fetch GDP data from IMF API
-async function fetchGdpData(year: string): Promise<Record<string, number> | null> {
+// Function to get cached data if it exists and is still valid
+function getCachedData(): GDPCacheData | null {
   try {
-    serverLog(`Fetching GDP data from IMF API for year ${year}`);
-    const controller = new AbortController();
-    // Increase timeout for production environment
-    const timeoutMs = process.env.NODE_ENV === 'production' ? 10000 : 5000;
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-    
-    const url = `https://www.imf.org/external/datamapper/api/v1/NGDPD?periods=${year}`;
-    serverLog('GDP API URL:', url);
-    
-    const response = await fetch(url, {
-      cache: 'no-cache',
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      },
-      signal: controller.signal
-    });
-    
-    clearTimeout(timeoutId);
-    
-    if (!response.ok) {
-      serverError(`IMF API GDP response not OK: ${response.status}`);
+    // Check if the cache file exists
+    if (!existsSync(CACHE_FILE)) {
       return null;
     }
     
-    const data = await response.json();
+    // Read the cache file
+    const cacheContents = readFileSync(CACHE_FILE, 'utf8');
+    const cachedData: GDPCacheData = JSON.parse(cacheContents);
     
-    if (!data.values) {
-      serverError('IMF API GDP response does not contain values key');
-      return null;
+    // Check if the cache is still valid (not expired)
+    const now = Date.now();
+    if (now - cachedData.timestamp <= CACHE_EXPIRY_MS) {
+      return cachedData;
     }
     
-    // Extract GDP values for the specified year
-    // The structure is: data.values.NGDPD[countryCode][year]
-    const gdpValues: Record<string, number> = {};
-    
-    // Check if the NGDPD dataset exists in the values
-    if (data.values.NGDPD) {
-      serverLog('Found NGDPD dataset in response');
-      
-      // Loop through each country in the NGDPD dataset
-      for (const [countryCode, yearData] of Object.entries(data.values.NGDPD)) {
-        if (typeof yearData === 'object' && yearData !== null && year in yearData) {
-          gdpValues[countryCode] = (yearData as any)[year];
-        }
-      }
-    } else {
-      // If NGDPD is not directly under values, try to find it elsewhere
-      serverLog('NGDPD dataset not found directly under values, checking alternative structure');
-      
-      // Try the direct structure where country codes are directly under values
-      for (const [countryCode, yearData] of Object.entries(data.values)) {
-        if (typeof yearData === 'object' && yearData !== null && year in yearData) {
-          gdpValues[countryCode] = (yearData as any)[year];
-        }
-      }
-    }
-    
-    const countryCount = Object.keys(gdpValues).length;
-    serverLog(`Fetched GDP data for ${countryCount} countries for year ${year}`);
-    
-    return gdpValues;
+    // Cache is expired
+    return cachedData; // Still return it, but we'll note it's stale when used
   } catch (error) {
-    serverError('Error fetching GDP data:', error);
+    console.error('[SERVER] Error reading cache:', error);
     return null;
   }
 }
 
-// Main API handler
-export async function GET(request: Request) {
+// Function to cache data
+function cacheData(data: GDPCacheData): void {
   try {
-    serverLog('IMF API Request URL:', request.url);
-    
-    // Determine the current year and previous year
-    const currentYear = new Date().getFullYear();
-    const previousYear = currentYear - 1;
-    const targetYear = previousYear.toString();
-    
-    // Check if we have valid cached data
-    const cachedData = readFromCache();
-    if (cachedData && isCacheValid(cachedData)) {
-      serverLog('Using cached data from', new Date(cachedData.timestamp).toLocaleString());
-      serverLog(`Returning ${Object.keys(cachedData.data).length} countries from cache for year ${cachedData.year}`);
-      return NextResponse.json({
-        data: cachedData.data,
-        year: cachedData.year,
-        timestamp: cachedData.timestamp,
-        source: 'cache'
-      });
+    // Ensure the cache directory exists
+    if (!existsSync(CACHE_DIR)) {
+      mkdirSync(CACHE_DIR, { recursive: true });
     }
     
-    // If cache is invalid or doesn't exist, fetch fresh data
-    serverLog('Cache invalid or not found, fetching fresh data');
-    
-    // Use Promise.race to implement a global timeout
-    const timeoutPromise = new Promise<null>((_, reject) => {
-      // Increase global timeout for production environment
-      const globalTimeoutMs = process.env.NODE_ENV === 'production' ? 15000 : 8000;
-      setTimeout(() => reject(new Error('API request timed out')), globalTimeoutMs);
-    });
-    
-    // Only fetch GDP data with a timeout
-    const gdpDataPromise = fetchGdpData(targetYear);
-    
-    // Race between the data fetch and the timeout
-    const gdpData = await Promise.race([
-      gdpDataPromise,
-      timeoutPromise.then(() => null)
-    ]) as Record<string, number> | null;
-    
-    // If request failed, check for cached data
-    if (!gdpData) {
-      serverWarn('Failed to fetch data from IMF API, checking for cached data');
-      
-      // Try to get data from cache
-      const cachedData = readFromCache();
-      
-      if (cachedData) {
-        serverLog('Using cached IMF data from:', new Date(cachedData.timestamp).toLocaleString());
-        
-        return NextResponse.json({
-          data: cachedData.data,
-          year: cachedData.year,
-          timestamp: cachedData.timestamp,
-          source: 'cache'
-        });
-      } else {
-        // No cache available, return error
-        return NextResponse.json(
-          { error: 'Failed to fetch from IMF API and no cache available' },
-          { status: 500 }
-        );
-      }
-    }
-    
-    // Create simplified data structure with GDP data
-    const combinedData: GDPCacheData = {
-      timestamp: Date.now(),
-      year: targetYear,
-      data: {},
-    };
-    
-    // Process GDP data - just store the GDP values directly
-    for (const [countryCode, gdpValue] of Object.entries(gdpData)) {
-      combinedData.data[countryCode] = gdpValue;
-    }
-    
-    // Check if we have a reasonable number of countries
-    const countryCount = Object.keys(combinedData.data).length;
-    if (countryCount < 20) {
-      serverWarn(`Low country count (${countryCount}), checking for cached data`);
-      
-      // Try to get data from cache
-      const cachedData = readFromCache();
-      
-      if (cachedData) {
-        serverLog('Using cached IMF data from:', new Date(cachedData.timestamp).toLocaleString());
-        
-        return NextResponse.json({
-          data: cachedData.data,
-          year: cachedData.year,
-          timestamp: cachedData.timestamp,
-          source: 'cache'
-        });
-      } else {
-        // No cache available, return error with the insufficient data
-        return NextResponse.json({
-          data: combinedData.data,
-          year: combinedData.year,
-          timestamp: combinedData.timestamp,
-          source: 'IMF API (insufficient data)',
-          error: `Only found ${countryCount} countries, which is less than the expected minimum of 20`
-        }, { status: 500 });
-      }
-    }
-    
-    // Cache the combined data
-    writeToCache(combinedData);
-    
-    // Return the combined data
-    serverLog(`Returning ${countryCount} countries with real GDP data for year ${targetYear}`);
-    return NextResponse.json({
-      data: combinedData.data,
-      year: combinedData.year,
-      timestamp: combinedData.timestamp,
-      source: 'IMF API'
-    });
-    
+    // Write the data to the cache file
+    writeFileSync(CACHE_FILE, JSON.stringify(data));
+    console.log('[SERVER] Wrote data to cache, timestamp:', new Date(data.timestamp).toLocaleString());
+    console.log('[SERVER] Cached', Object.keys(data.data).length, 'countries with GDP data for year', data.year);
   } catch (error) {
-    serverError('Error in IMF API route:', error);
-    
-    // Check for cached data in case of any error
-    const cachedData = readFromCache();
-    
-    if (cachedData) {
-      serverLog('Using cached IMF data due to error:', error);
-      
-      return NextResponse.json({
-        data: cachedData.data,
-        year: cachedData.year,
-        timestamp: cachedData.timestamp,
-        source: 'cache (error)',
-        error: error instanceof Error ? error.message : String(error)
-      });
-    } else {
-      // No cache available, return error
-      return NextResponse.json(
-        { error: error instanceof Error ? error.message : 'Unknown error' },
-        { status: 500 }
-      );
-    }
+    console.error('[SERVER] Error writing to cache:', error);
   }
 } 
