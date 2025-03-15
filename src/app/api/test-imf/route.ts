@@ -1,118 +1,92 @@
 // Test route to check if IMF API is directly accessible from Vercel
 import { NextResponse } from 'next/server';
 
-export const runtime = 'nodejs';
-export const maxDuration = 60;
-
+// Simple test route to check IMF API connectivity
 export async function GET() {
   console.log('[SERVER] Test IMF API call starting');
-  try {
-    // Direct fetch to IMF API
-    const imfUrl = 'https://www.imf.org/external/datamapper/api/v1/NGDPD?periods=2024';
-    console.log('[SERVER] Test IMF API URL:', imfUrl);
-    
-    // First try with a basic fetch
-    console.log('[SERVER] Attempting fetch with default settings');
-    let imfResponse;
-    
+  
+  const imfUrl = 'https://www.imf.org/external/datamapper/api/v1/NGDPD?periods=2024';
+  console.log('[SERVER] Target IMF API URL:', imfUrl);
+  
+  // List of approaches to try
+  const approaches = [
+    {
+      name: 'direct',
+      fetch: async () => {
+        console.log('[SERVER] Trying direct approach...');
+        return fetch(imfUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept': 'application/json'
+          },
+          cache: 'no-store'
+        });
+      }
+    },
+    {
+      name: 'allorigins',
+      fetch: async () => {
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(imfUrl)}`;
+        console.log('[SERVER] Trying AllOrigins proxy:', proxyUrl);
+        return fetch(proxyUrl, { cache: 'no-store' });
+      }
+    },
+    {
+      name: 'corsproxy',
+      fetch: async () => {
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(imfUrl)}`;
+        console.log('[SERVER] Trying CORS Proxy:', proxyUrl);
+        return fetch(proxyUrl, { cache: 'no-store' });
+      }
+    }
+  ];
+  
+  // Try each approach and return the first successful one
+  for (const approach of approaches) {
     try {
-      // Use proxy to avoid Cloudflare issues
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(imfUrl)}`;
-      console.log('[SERVER] Using proxy URL:', proxyUrl);
+      console.log(`[SERVER] Testing ${approach.name} approach`);
+      const response = await approach.fetch();
       
-      imfResponse = await fetch(proxyUrl, {
-        cache: 'no-store'
-      });
+      // Log response status
+      console.log(`[SERVER] ${approach.name} response status:`, response.status);
       
-      // Log the response status and headers
-      console.log('[SERVER] IMF API response status:', imfResponse.status);
-      console.log('[SERVER] IMF API response headers:', Object.fromEntries(imfResponse.headers.entries()));
-      
-      if (!imfResponse.ok) {
-        console.error('[SERVER] Proxy API fetch failed with status code:', imfResponse.status);
-        
-        // Get response body for error details
-        let errorBody;
-        try {
-          errorBody = await imfResponse.text();
-          console.error('[SERVER] Proxy API error response body:', errorBody);
-        } catch (bodyError) {
-          console.error('[SERVER] Failed to read error response body:', bodyError);
-          errorBody = 'Failed to read error response body';
-        }
-        
-        return NextResponse.json({ 
-          error: `Proxy API request failed with status: ${imfResponse.status}`,
-          errorBody: errorBody,
-          timestamp: new Date().toISOString(),
-          headers: Object.fromEntries(imfResponse.headers.entries())
-        }, { status: 500 });
+      if (!response.ok) {
+        console.error(`[SERVER] ${approach.name} failed with status:`, response.status);
+        continue; // Try next approach
       }
       
-      // Attempt to parse JSON
-      const responseData = await imfResponse.json();
-      
-      // Return success info
-      return NextResponse.json({
-        success: true,
-        statusCode: imfResponse.status,
-        timestamp: new Date().toISOString(),
-        hasData: !!responseData?.datasets?.NGDPD || !!responseData?.values?.NGDPD,
-        dataStructure: responseData?.datasets ? 'datasets' : 
-                      responseData?.values ? 'values' : 'unknown',
-        countryCount: responseData?.datasets?.NGDPD ? 
-                     Object.keys(responseData.datasets.NGDPD).length : 
-                     responseData?.values?.NGDPD ? 
-                     Object.keys(responseData.values.NGDPD).length : 0,
-        headers: Object.fromEntries(imfResponse.headers.entries())
-      });
-      
-    } catch (fetchError) {
-      console.error('[SERVER] Initial fetch error:', fetchError);
-      
-      // Try a different proxy service
+      // Try to parse JSON
       try {
-        console.log('[SERVER] Trying alternative proxy approach');
-        const alternativeProxyUrl = `https://corsproxy.io/?${encodeURIComponent(imfUrl)}`;
+        const data = await response.json();
         
-        const alternativeResponse = await fetch(alternativeProxyUrl, { cache: 'no-store' });
+        // Check if the response has the expected structure
+        const hasDatasets = !!data?.datasets?.NGDPD;
+        const hasValues = !!data?.values?.NGDPD;
+        const structure = hasDatasets ? 'datasets' : hasValues ? 'values' : 'unknown';
         
-        if (!alternativeResponse.ok) {
-          return NextResponse.json({ 
-            error: `Alternative proxy responded with status: ${alternativeResponse.status}`,
-            timestamp: new Date().toISOString()
-          }, { status: 500 });
-        }
-        
-        const responseData = await alternativeResponse.json();
+        const countryCount = hasDatasets ? Object.keys(data.datasets.NGDPD).length : 
+                           hasValues ? Object.keys(data.values.NGDPD).length : 0;
         
         return NextResponse.json({
           success: true,
-          approach: 'alternative-proxy',
-          statusCode: alternativeResponse.status,
-          timestamp: new Date().toISOString(),
-          hasData: !!responseData?.datasets?.NGDPD || !!responseData?.values?.NGDPD,
-          dataStructure: responseData?.datasets ? 'datasets' : 
-                        responseData?.values ? 'values' : 'unknown'
+          approach: approach.name,
+          hasData: hasDatasets || hasValues,
+          dataStructure: structure,
+          countryCount: countryCount,
+          timestamp: new Date().toISOString()
         });
-      } catch (alternativeError) {
-        console.error('[SERVER] Alternative approach failed:', alternativeError);
-        
-        return NextResponse.json({ 
-          error: `All proxy approaches failed. Last error: ${alternativeError instanceof Error ? alternativeError.message : String(alternativeError)}`,
-          initialError: `${fetchError instanceof Error ? fetchError.message : String(fetchError)}`,
-          timestamp: new Date().toISOString(),
-          errorType: fetchError instanceof Error ? fetchError.name : 'Unknown Error Type'
-        }, { status: 500 });
+      } catch (jsonError) {
+        console.error(`[SERVER] ${approach.name} JSON parse error:`, jsonError);
       }
+    } catch (error) {
+      console.error(`[SERVER] ${approach.name} request error:`, error);
     }
-  } catch (error) {
-    console.error('[SERVER] Test IMF API outer error:', error);
-    return NextResponse.json({ 
-      error: `Fatal error in test endpoint: ${error instanceof Error ? error.message : String(error)}`,
-      timestamp: new Date().toISOString(),
-      errorType: error instanceof Error ? error.name : 'Unknown Error Type',
-      errorStack: error instanceof Error ? error.stack : 'No stack trace available'
-    }, { status: 500 });
   }
+  
+  // If all approaches failed
+  return NextResponse.json({
+    success: false,
+    error: "All approaches failed to fetch IMF data",
+    timestamp: new Date().toISOString()
+  }, { status: 500 });
 } 
