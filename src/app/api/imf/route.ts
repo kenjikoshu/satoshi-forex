@@ -96,6 +96,15 @@ export async function GET(request: Request) {
         year: currentYear,
         timestamp: Date.now(),
         data: gdpData
+      }, {
+        headers: {
+          // Strong cache for 1 day at the edge, with stale-while-revalidate for 30 days
+          'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=2592000',
+          // Allow public caching, important for Vercel's CDN
+          'Surrogate-Control': 'public, max-age=86400, stale-while-revalidate=2592000',
+          // Additional Vercel-specific caching directive
+          'Vercel-CDN-Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=2592000',
+        }
       });
     } catch (error) {
       serverError('Failed to fetch from IMF API:', error);
@@ -111,6 +120,15 @@ export async function GET(request: Request) {
           year: cachedData.year,
           timestamp: cachedData.timestamp,
           data: cachedData.data
+        }, {
+          headers: {
+            // Strong cache for 1 day at the edge, with stale-while-revalidate for 30 days
+            'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=2592000',
+            // Allow public caching, important for Vercel's CDN
+            'Surrogate-Control': 'public, max-age=86400, stale-while-revalidate=2592000',
+            // Additional Vercel-specific caching directive
+            'Vercel-CDN-Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=2592000',
+          }
         });
       } else {
         throw new Error('Failed to fetch from IMF API and no cache available');

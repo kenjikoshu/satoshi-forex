@@ -74,6 +74,13 @@ export async function GET() {
           dataStructure: structure,
           countryCount: countryCount,
           timestamp: new Date().toISOString()
+        }, {
+          headers: {
+            // Cache for 1 hour at the edge
+            'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+            'Surrogate-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+            'Vercel-CDN-Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+          }
         });
       } catch (jsonError) {
         console.error(`[SERVER] ${approach.name} JSON parse error:`, jsonError);
