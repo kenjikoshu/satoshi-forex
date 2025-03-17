@@ -262,6 +262,10 @@ export default function Home() {
   const [apiErrors, setApiErrors] = useState<Record<string, {error: string, source: string}>>({});
   const tableRef = useRef<HTMLDivElement>(null);
   
+  // Add state for sorting
+  const [sortColumn, setSortColumn] = useState<'economicSize' | 'valueOfOneSat' | 'satsPerUnit'>('economicSize');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  
   // State for Bitcoin data timestamp
   const [bitcoinPriceTimestamp, setBitcoinPriceTimestamp] = useState<string | null>(null);
   const [gdpDataTimestamp, setGdpDataTimestamp] = useState<string | null>(null);
@@ -680,12 +684,16 @@ export default function Home() {
   // Helper function to format currency code display
   function formatCurrencyDisplay(currency: Currency): JSX.Element {
     let badgeColor = '';
+    let displayText = currency.code;
+    
     switch(currency.type) {
       case 'crypto':
         badgeColor = 'bg-orange-100 text-orange-800';
         break;
       case 'metal':
         badgeColor = 'bg-yellow-100 text-yellow-800';
+        // Add "per oz" to metal currency codes
+        displayText = currency.code === 'XAU' ? 'XAU (oz)' : currency.code === 'XAG' ? 'XAG (oz)' : currency.code;
         break;
       case 'fiat':
         badgeColor = 'bg-blue-100 text-blue-800';
@@ -694,7 +702,7 @@ export default function Home() {
     
     return (
       <div className="flex items-center">
-        <span className="font-mono font-bold">{currency.code}</span>
+        <span className="font-mono font-bold">{displayText}</span>
         <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${badgeColor}`}>
           {currency.type.toUpperCase()}
         </span>
@@ -702,6 +710,48 @@ export default function Home() {
     );
   }
   
+  // Function to handle column sorting
+  const handleSort = (column: 'economicSize' | 'valueOfOneSat' | 'satsPerUnit') => {
+    if (sortColumn === column) {
+      // If already sorting by this column, toggle direction
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // If sorting by a new column, set it and use default direction
+      setSortColumn(column);
+      // Default sort directions: desc for economicSize, asc for others
+      setSortDirection(column === 'economicSize' ? 'desc' : 'asc');
+    }
+  };
+
+  // Function to get sorted currencies
+  const getSortedCurrencies = () => {
+    if (!currencies.length) return [];
+    
+    return [...currencies].sort((a, b) => {
+      const valueA = a[sortColumn];
+      const valueB = b[sortColumn];
+      
+      // Handle null values
+      if (valueA === null && valueB === null) return 0;
+      if (valueA === null) return 1;
+      if (valueB === null) return -1;
+      
+      // Sort based on direction
+      const compareResult = valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
+      return sortDirection === 'asc' ? compareResult : -compareResult;
+    });
+  };
+
+  // Function to render sort indicator
+  const renderSortIndicator = (column: 'economicSize' | 'valueOfOneSat' | 'satsPerUnit') => {
+    if (sortColumn !== column) {
+      return <span className="ml-1 text-gray-400">↕</span>;
+    }
+    return sortDirection === 'asc' 
+      ? <span className="ml-1 text-gray-700">↑</span> 
+      : <span className="ml-1 text-gray-700">↓</span>;
+  };
+
   return (
     <main className="min-h-screen p-4 md:p-8 bg-gray-50">
       <div className="max-w-7xl mx-auto">
@@ -783,19 +833,39 @@ export default function Home() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Asset/Currency
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      GDP/Market Cap (USD)
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('economicSize')}
+                    >
+                      <div className="flex items-center">
+                        GDP/Market Cap (USD)
+                        {renderSortIndicator('economicSize')}
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Value of 1 SATS
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('valueOfOneSat')}
+                    >
+                      <div className="flex items-center">
+                        Value of 1 SATS
+                        <span className="ml-1 text-xs font-normal normal-case text-gray-400">(Metals in troy oz)</span>
+                        {renderSortIndicator('valueOfOneSat')}
+                      </div>
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      SATS per Unit
+                    <th 
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleSort('satsPerUnit')}
+                    >
+                      <div className="flex items-center">
+                        SATS per Unit
+                        <span className="ml-1 text-xs font-normal normal-case text-gray-400">(Metals per troy oz)</span>
+                        {renderSortIndicator('satsPerUnit')}
+                      </div>
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {currencies.map((currency) => (
+                  {getSortedCurrencies().map((currency) => (
                     <tr 
                       key={currency.code} 
                       className={currency.code === "BTC" ? "bg-orange-50" : "hover:bg-gray-50"}
@@ -814,13 +884,15 @@ export default function Home() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
                         {currency.type === 'metal' 
-                          ? `${formatSatValue(currency.valueOfOneSat)} oz`
+                          ? `${formatSatValue(currency.valueOfOneSat)} oz (troy)`
                           : (currency.type === 'fiat' 
                             ? `${formatSatValue(currency.valueOfOneSat)} ${currency.code}`
                             : `1 SATS`)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
-                        {formatSatsPerUnit(currency.satsPerUnit)}
+                        {currency.type === 'metal'
+                          ? `${formatSatsPerUnit(currency.satsPerUnit)} (per oz)`
+                          : formatSatsPerUnit(currency.satsPerUnit)}
                       </td>
                     </tr>
                   ))}
@@ -846,8 +918,8 @@ export default function Home() {
               <li>
                 <strong>Gold & Silver:</strong> Prices derived from Bitcoin-to-Gold and Bitcoin-to-Silver ratios via CoinGecko API, with market caps calculated using:
                 <ul className="list-circle pl-5 mt-1 space-y-1">
-                  <li>Gold: 215,000 metric tons of estimated above-ground supply</li>
-                  <li>Silver: 1,800,000 metric tons of estimated above-ground supply</li>
+                  <li>Gold: 215,000 metric tons of estimated above-ground supply (all prices in troy ounces)</li>
+                  <li>Silver: 1,800,000 metric tons of estimated above-ground supply (all prices in troy ounces)</li>
                 </ul>
               </li>
               <li><strong>GDP Data:</strong> Static GDP data from IMF World Economic Outlook database</li>
