@@ -27,24 +27,6 @@ interface CoinGeckoResponse {
   }
 }
 
-// Enable debug logging based on environment variable
-const DEBUG_LOGGING = process.env.NEXT_PUBLIC_ENABLE_DEBUG_LOGGING === 'true';
-
-// Helper function for debugging
-function debugLog(...args: any[]) {
-  if (DEBUG_LOGGING || process.env.NODE_ENV === 'development') {
-    console.log('[CLIENT]', ...args);
-  }
-}
-
-// Helper function for error logging
-function clientError(...args: any[]) {
-  console.error('[CLIENT ERROR]', ...args);
-}
-
-// Define API URL for CoinGecko
-const COINGECKO_API_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,eur,jpy,gbp,cny,inr,cad,aud,brl,rub,krw,sgd,chf,hkd,sek,mxn,zar,nok,nzd,thb,try,pln,dkk,idr,php,myr,czk,clp,ars,ils,cop,sar,aed,twd,ron,huf,vnd,pkr,ngn,xau,xag';
-
 // Define the return type for fetchData
 interface FetchDataResult {
   bitcoinData: CoinGeckoResponse;
@@ -55,111 +37,11 @@ interface FetchDataResult {
   btcPriceUSD: number;
 }
 
-// Function to fetch data from APIs and static files
-async function fetchData(): Promise<FetchDataResult> {
-  debugLog("Starting client-side data fetching...");
-  
-  try {
-    // Fetch Bitcoin data directly from CoinGecko
-    debugLog("Fetching Bitcoin data directly from CoinGecko API...");
-    
-    let bitcoinData: CoinGeckoResponse;
-    try {
-      const coinGeckoResponse = await fetch(COINGECKO_API_URL);
-      
-      if (!coinGeckoResponse.ok) {
-        const errorText = await coinGeckoResponse.text();
-        debugLog('Error fetching CoinGecko data:', coinGeckoResponse.status, errorText);
-        throw new Error(`Failed to fetch CoinGecko data: ${coinGeckoResponse.status} - ${errorText}`);
-      }
-      
-      bitcoinData = await coinGeckoResponse.json();
-      debugLog("Bitcoin data fetched successfully", bitcoinData);
-    } catch (error) {
-      clientError("Failed to fetch Bitcoin data:", error);
-      throw new Error(`Failed to fetch Bitcoin data: ${error instanceof Error ? error.message : String(error)}`);
-    }
-    
-    // Fetch GDP data from local static JSON file
-    debugLog("Fetching GDP data from static JSON file...");
-    
-    let gdpData: Record<string, number> = {};
-    let gdpYear = new Date().getFullYear();
-    
-    try {
-      // From https://www.imf.org/external/datamapper/api/v1/NGDPD?periods=2024
-      const imfResponse = await fetch('/data/imf-gdp-data.json');
-      
-      if (!imfResponse.ok) {
-        const errorText = await imfResponse.text();
-        debugLog('Error fetching IMF data from file:', imfResponse.status, errorText);
-        throw new Error(`Failed to fetch IMF data from file: ${imfResponse.status} - ${errorText}`);
-      }
-      
-      const imfResponseData = await imfResponse.json();
-      debugLog("GDP data fetched successfully from file", imfResponseData);
-      
-      // Process the IMF data based on its actual structure
-      if (imfResponseData.values && imfResponseData.values.NGDPD) {
-        // Extract the NGDPD dataset which contains GDP data
-        const ngdpdData = imfResponseData.values.NGDPD;
-        
-        // Find the most recent year in the data
-        // Most country entries will have the same year, so we just need to check one
-        const sampleCountry = Object.keys(ngdpdData)[0];
-        if (sampleCountry && ngdpdData[sampleCountry]) {
-          const years = Object.keys(ngdpdData[sampleCountry]).map(Number);
-          if (years.length > 0) {
-            // Get the most recent year
-            gdpYear = Math.max(...years);
-            debugLog("Found GDP year in data:", gdpYear);
-          }
-        }
-        
-        // Process each country's GDP data for the most recent year
-        for (const [countryCode, yearData] of Object.entries(ngdpdData)) {
-          if (yearData && typeof yearData === 'object') {
-            // Get the GDP value for the most recent year
-            const yearDataRecord = yearData as Record<string, number>;
-            const gdpValue = yearDataRecord[gdpYear.toString()];
-            if (gdpValue !== undefined) {
-              gdpData[countryCode] = Number(gdpValue);
-            }
-          }
-        }
-        
-        debugLog(`Processed ${Object.keys(gdpData).length} GDP values from IMF data`);
-      } else if (imfResponseData.data && typeof imfResponseData.data === 'object') {
-        // Fallback to the simplified format if present
-        gdpData = imfResponseData.data;
-        if (imfResponseData.year) {
-          gdpYear = imfResponseData.year;
-        }
-      } else {
-        throw new Error("GDP data from file doesn't have the expected structure");
-      }
-    } catch (error) {
-      clientError("Failed to fetch GDP data:", error);
-      throw new Error(`Failed to fetch GDP data: ${error instanceof Error ? error.message : String(error)}`);
-    }
-    
-    // Extract Bitcoin price and return the data
-    const btcPriceUSD = bitcoinData.bitcoin.usd;
-    debugLog("BTC price in USD:", btcPriceUSD);
-    
-    return {
-      bitcoinData,
-      gdpData: {
-        year: gdpYear,
-        data: gdpData
-      },
-      btcPriceUSD
-    };
-  } catch (error) {
-    clientError("Error in fetchData:", error);
-    throw error;
-  }
-}
+// Enable debug logging based on environment variable
+const DEBUG_LOGGING = process.env.NEXT_PUBLIC_ENABLE_DEBUG_LOGGING === 'true';
+
+// Define API URL for CoinGecko
+const COINGECKO_API_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,eur,jpy,gbp,cny,inr,cad,aud,brl,rub,krw,sgd,chf,hkd,sek,mxn,zar,nok,nzd,thb,try,pln,dkk,idr,php,myr,czk,clp,ars,ils,cop,sar,aed,twd,ron,huf,vnd,pkr,ngn,xau,xag';
 
 // Comprehensive country code to currency code mapping
 const CountryCodeToCurrencyCode: Record<string, string> = {
@@ -273,6 +155,18 @@ const EUROZONE_COUNTRIES = [
   'LVA', 'LTU', 'LUX', 'MLT', 'NLD', 'PRT', 'SVK', 'SVN', 'ESP', 'HRV'
 ];
 
+// Helper function for debugging
+function debugLog(...args: any[]) {
+  if (DEBUG_LOGGING || process.env.NODE_ENV === 'development') {
+    console.log('[CLIENT]', ...args);
+  }
+}
+
+// Helper function for error logging
+function clientError(...args: any[]) {
+  console.error('[CLIENT ERROR]', ...args);
+}
+
 // Function to map country code to currency code
 function mapCountryCodeToCurrency(countryCode: string): string | null {
   return CountryCodeToCurrencyCode[countryCode] || null;
@@ -281,6 +175,112 @@ function mapCountryCodeToCurrency(countryCode: string): string | null {
 // Check if a country is in the Eurozone
 function isEurozoneCountry(countryCode: string): boolean {
   return EUROZONE_COUNTRIES.includes(countryCode);
+}
+
+// Function to fetch data from APIs and static files
+async function fetchData(): Promise<FetchDataResult> {
+  debugLog("Starting client-side data fetching...");
+  
+  try {
+    // Fetch Bitcoin data directly from CoinGecko
+    debugLog("Fetching Bitcoin data directly from CoinGecko API...");
+    
+    let bitcoinData: CoinGeckoResponse;
+    try {
+      const coinGeckoResponse = await fetch(COINGECKO_API_URL);
+      
+      if (!coinGeckoResponse.ok) {
+        const errorText = await coinGeckoResponse.text();
+        debugLog('Error fetching CoinGecko data:', coinGeckoResponse.status, errorText);
+        throw new Error(`Failed to fetch CoinGecko data: ${coinGeckoResponse.status} - ${errorText}`);
+      }
+      
+      bitcoinData = await coinGeckoResponse.json();
+      debugLog("Bitcoin data fetched successfully", bitcoinData);
+    } catch (error) {
+      clientError("Failed to fetch Bitcoin data:", error);
+      throw new Error(`Failed to fetch Bitcoin data: ${error instanceof Error ? error.message : String(error)}`);
+    }
+    
+    // Fetch GDP data from local static JSON file
+    debugLog("Fetching GDP data from static JSON file...");
+    
+    let gdpData: Record<string, number> = {};
+    let gdpYear = new Date().getFullYear();
+    
+    try {
+      // From https://www.imf.org/external/datamapper/api/v1/NGDPD?periods=2024
+      const imfResponse = await fetch('/data/imf-gdp-data.json');
+      
+      if (!imfResponse.ok) {
+        const errorText = await imfResponse.text();
+        debugLog('Error fetching IMF data from file:', imfResponse.status, errorText);
+        throw new Error(`Failed to fetch IMF data from file: ${imfResponse.status} - ${errorText}`);
+      }
+      
+      const imfResponseData = await imfResponse.json();
+      debugLog("GDP data fetched successfully from file", imfResponseData);
+      
+      // Process the IMF data based on its actual structure
+      if (imfResponseData.values && imfResponseData.values.NGDPD) {
+        // Extract the NGDPD dataset which contains GDP data
+        const ngdpdData = imfResponseData.values.NGDPD;
+        
+        // Find the most recent year in the data
+        // Most country entries will have the same year, so we just need to check one
+        const sampleCountry = Object.keys(ngdpdData)[0];
+        if (sampleCountry && ngdpdData[sampleCountry]) {
+          const years = Object.keys(ngdpdData[sampleCountry]).map(Number);
+          if (years.length > 0) {
+            // Get the most recent year
+            gdpYear = Math.max(...years);
+            debugLog("Found GDP year in data:", gdpYear);
+          }
+        }
+        
+        // Process each country's GDP data for the most recent year
+        for (const [countryCode, yearData] of Object.entries(ngdpdData)) {
+          if (yearData && typeof yearData === 'object') {
+            // Get the GDP value for the most recent year
+            const yearDataRecord = yearData as Record<string, number>;
+            const gdpValue = yearDataRecord[gdpYear.toString()];
+            if (gdpValue !== undefined) {
+              gdpData[countryCode] = Number(gdpValue);
+            }
+          }
+        }
+        
+        debugLog(`Processed ${Object.keys(gdpData).length} GDP values from IMF data`);
+      } else if (imfResponseData.data && typeof imfResponseData.data === 'object') {
+        // Fallback to the simplified format if present
+        gdpData = imfResponseData.data;
+        if (imfResponseData.year) {
+          gdpYear = imfResponseData.year;
+        }
+      } else {
+        throw new Error("GDP data from file doesn't have the expected structure");
+      }
+    } catch (error) {
+      clientError("Failed to fetch GDP data:", error);
+      throw new Error(`Failed to fetch GDP data: ${error instanceof Error ? error.message : String(error)}`);
+    }
+    
+    // Extract Bitcoin price and return the data
+    const btcPriceUSD = bitcoinData.bitcoin.usd;
+    debugLog("BTC price in USD:", btcPriceUSD);
+    
+    return {
+      bitcoinData,
+      gdpData: {
+        year: gdpYear,
+        data: gdpData
+      },
+      btcPriceUSD
+    };
+  } catch (error) {
+    clientError("Error in fetchData:", error);
+    throw error;
+  }
 }
 
 export default function Home() {
@@ -327,7 +327,7 @@ export default function Home() {
     return null;
   };
   
-  // Calculate value of 1 SATS in a currency
+  // Calculate value of 1 SAT in a currency
   const calculateSatoshiValue = (currencyCode: string): number | null => {
     // Get the Bitcoin price in the specified currency
     const btcPrice = getBitcoinPrice(currencyCode.toLowerCase());
@@ -667,7 +667,7 @@ export default function Home() {
     }
   }
   
-  // New function specifically for formatting the Value of 1 SATS column with standard decimal places
+  // New function specifically for formatting the Value of 1 SAT column with standard decimal places
   function formatSatValue(num: number | null): string {
     if (num === null || num === 0) return 'N/A';
     return num.toFixed(10);
@@ -890,7 +890,7 @@ export default function Home() {
                       onClick={() => handleSort('valueOfOneSat')}
                     >
                       <div className="flex items-center">
-                        Value of 1 SATS
+                        Value of 1 SAT
                         {renderSortIndicator('valueOfOneSat')}
                       </div>
                     </th>
@@ -928,14 +928,14 @@ export default function Home() {
                           ? `${formatSatValue(currency.valueOfOneSat)} oz (troy)`
                           : (currency.type === 'fiat' 
                             ? `${formatSatValue(currency.valueOfOneSat)} ${currency.code}`
-                            : `1 SATS`)}
+                            : `1 SAT`)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
                         {currency.type === 'metal'
                           ? `${formatSatsPerUnit(currency.satsPerUnit)} (per oz)`
                           : (currency.code === 'BTC'
                             ? `${formatSatsPerUnit(currency.satsPerUnit)} (per BTC)`
-                            : `${currency.satsPerUnit.toFixed(3)}`)
+                            : `${formatSatsPerUnit(currency.satsPerUnit)}`)
                         }
                       </td>
                     </tr>
