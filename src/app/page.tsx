@@ -269,6 +269,7 @@ export default function Home() {
   // State for Bitcoin data timestamp
   const [bitcoinPriceTimestamp, setBitcoinPriceTimestamp] = useState<string | null>(null);
   const [gdpDataTimestamp, setGdpDataTimestamp] = useState<string | null>(null);
+  const [gdpYear, setGdpYear] = useState<number>(new Date().getFullYear());
 
   // State for Bitcoin prices in different currencies
   const [bitcoinPrices, setBitcoinPrices] = useState<Record<string, number>>({});
@@ -336,6 +337,9 @@ export default function Home() {
         
         // Store Bitcoin prices for use in calculations
         setBitcoinPrices(bitcoinData.bitcoin);
+        
+        // Store GDP year
+        setGdpYear(gdpData.year);
         
         // Process GDP data
         const processedGdpData: Record<string, number> = {};
@@ -777,6 +781,12 @@ export default function Home() {
           <p className="text-md md:text-lg text-gray-500 mt-2">
             See how Satoshis stack up against Gold, Silver, and the world&apos;s top economies!
           </p>
+          <div className="mt-4 text-sm text-gray-600 max-w-3xl mx-auto">
+            <p>
+              We use GDP (from {gdpYear}) to compare with market cap because it&apos;s within an order of magnitude of money supply, 
+              while reliable and consistent money supply data is difficult to obtain across all countries.
+            </p>
+          </div>
         </header>
         
         {/* Share Button */}
@@ -918,8 +928,9 @@ export default function Home() {
           <h2 className="text-xl font-semibold mb-4">About the Rankings</h2>
           <p className="text-gray-700 mb-4">
             Why GDP and Market Cap? We rank fiat by GDP and Bitcoin, Gold, and Silver by market cap for a fair comparison. 
+            GDP is used because it&apos;s within an order of magnitude of money supply, while reliable and consistent money supply data is difficult to obtain across all countries.
             The table shows Bitcoin, Gold, Silver, and the top {TOP_CURRENCIES_LIMIT} currencies by GDP.
-            GDP data is sourced from the IMF&apos;s World Economic Outlook database.
+            GDP data is sourced from the IMF&apos;s World Economic Outlook database ({gdpYear}).
           </p>
           
           <div className="bg-blue-50 p-4 rounded-lg">
@@ -933,7 +944,7 @@ export default function Home() {
                   <li>Silver: 1,800,000 metric tons of estimated above-ground supply (all prices in troy ounces)</li>
                 </ul>
               </li>
-              <li><strong>GDP Data:</strong> Static GDP data from IMF World Economic Outlook database</li>
+              <li><strong>GDP Data:</strong> Static GDP data from IMF World Economic Outlook database ({gdpYear})</li>
               <li>
                 <strong>Eurozone:</strong> Combined GDP of all 20 Euro-using countries:
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-1 mt-1 text-xs">
