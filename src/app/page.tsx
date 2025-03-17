@@ -801,13 +801,18 @@ export default function Home() {
         {/* Header Section */}
         <header className="mb-8 text-center">
           <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-2">
-            Satoshis Forex
+            The Satoshi: Bitcoin&apos;s Currency Unit
           </h1>
-          <p className="text-lg md:text-xl text-gray-600">
-            Ranking Bitcoin, Metals, and Top {TOP_CURRENCIES_LIMIT} Currencies
+          <p className="text-lg md:text-xl text-gray-600 mb-3">
+            1 Bitcoin = 100,000,000 Satoshis
           </p>
-          <p className="text-md md:text-lg text-gray-500 mt-2">
-            See how Satoshis stack up against Gold, Silver, and the world&apos;s top economies!
+          <div className="max-w-2xl mx-auto">
+            <p className="text-md md:text-lg text-gray-600">
+              Just as dollars and euros have cents, Bitcoin has Satoshis, the actual unit of Bitcoin in the Bitcoin code
+            </p>
+          </div>
+          <p className="text-md md:text-lg text-gray-500 mt-4">
+            See how Satoshis compare to Gold, Silver, and the world&apos;s top {TOP_CURRENCIES_LIMIT} currencies!
           </p>
         </header>
         
