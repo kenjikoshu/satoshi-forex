@@ -99,14 +99,42 @@ async function fetchData(): Promise<FetchDataResult> {
       const imfResponseData = await imfResponse.json();
       debugLog("GDP data fetched successfully from file", imfResponseData);
       
-      // Set the year from the file if available, otherwise use current year
-      if (imfResponseData.year) {
-        gdpYear = imfResponseData.year;
-      }
-      
-      // Process the GDP data - assumes the file has a data property with country codes as keys
-      if (imfResponseData.data && typeof imfResponseData.data === 'object') {
+      // Process the IMF data based on its actual structure
+      if (imfResponseData.values && imfResponseData.values.NGDPD) {
+        // Extract the NGDPD dataset which contains GDP data
+        const ngdpdData = imfResponseData.values.NGDPD;
+        
+        // Find the most recent year in the data
+        // Most country entries will have the same year, so we just need to check one
+        const sampleCountry = Object.keys(ngdpdData)[0];
+        if (sampleCountry && ngdpdData[sampleCountry]) {
+          const years = Object.keys(ngdpdData[sampleCountry]).map(Number);
+          if (years.length > 0) {
+            // Get the most recent year
+            gdpYear = Math.max(...years);
+            debugLog("Found GDP year in data:", gdpYear);
+          }
+        }
+        
+        // Process each country's GDP data for the most recent year
+        for (const [countryCode, yearData] of Object.entries(ngdpdData)) {
+          if (yearData && typeof yearData === 'object') {
+            // Get the GDP value for the most recent year
+            const yearDataRecord = yearData as Record<string, number>;
+            const gdpValue = yearDataRecord[gdpYear.toString()];
+            if (gdpValue !== undefined) {
+              gdpData[countryCode] = Number(gdpValue);
+            }
+          }
+        }
+        
+        debugLog(`Processed ${Object.keys(gdpData).length} GDP values from IMF data`);
+      } else if (imfResponseData.data && typeof imfResponseData.data === 'object') {
+        // Fallback to the simplified format if present
         gdpData = imfResponseData.data;
+        if (imfResponseData.year) {
+          gdpYear = imfResponseData.year;
+        }
       } else {
         throw new Error("GDP data from file doesn't have the expected structure");
       }
@@ -863,7 +891,6 @@ export default function Home() {
                     >
                       <div className="flex items-center">
                         Value of 1 SATS
-                        <span className="ml-1 text-xs font-normal normal-case text-gray-400">(Metals in troy oz)</span>
                         {renderSortIndicator('valueOfOneSat')}
                       </div>
                     </th>
@@ -873,7 +900,6 @@ export default function Home() {
                     >
                       <div className="flex items-center">
                         SATS per Unit
-                        <span className="ml-1 text-xs font-normal normal-case text-gray-400">(Metals per troy oz)</span>
                         {renderSortIndicator('satsPerUnit')}
                       </div>
                     </th>
