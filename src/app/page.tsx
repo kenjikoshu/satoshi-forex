@@ -419,7 +419,7 @@ export default function Home() {
           name: "Bitcoin",
           economicSize: btcMarketCap,
           satsPerUnit: 100000000, // 1 BTC = 100,000,000 sats
-          valueOfOneSat: btcPriceUSD / 100000000, // Value of 1 sat in USD
+          valueOfOneSat: 1, // For Bitcoin, 1 SATS = 1 SATS (not the USD value)
           type: 'crypto'
         });
         
@@ -758,6 +758,12 @@ export default function Home() {
     if (!currencies.length) return [];
     
     return [...currencies].sort((a, b) => {
+      // Special case for Bitcoin when sorting by valueOfOneSat
+      if (sortColumn === 'valueOfOneSat') {
+        if (a.code === 'BTC') return sortDirection === 'asc' ? -1 : 1;
+        if (b.code === 'BTC') return sortDirection === 'asc' ? 1 : -1;
+      }
+      
       const valueA = a[sortColumn];
       const valueB = b[sortColumn];
       
@@ -928,7 +934,7 @@ export default function Home() {
                           ? `${formatSatValue(currency.valueOfOneSat)} oz (troy)`
                           : (currency.type === 'fiat' 
                             ? `${formatSatValue(currency.valueOfOneSat)} ${currency.code}`
-                            : `1 SATS`)}
+                            : `1 SATS (reference)`)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
                         {currency.type === 'metal'
