@@ -773,7 +773,7 @@ export default function Home() {
         {/* Header Section */}
         <header className="mb-8 text-center">
           <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-2">
-            Satoshi Forex
+            Satoshis Forex
           </h1>
           <p className="text-lg md:text-xl text-gray-600">
             Ranking Bitcoin, Metals, and Top {TOP_CURRENCIES_LIMIT} Currencies
@@ -781,12 +781,6 @@ export default function Home() {
           <p className="text-md md:text-lg text-gray-500 mt-2">
             See how Satoshis stack up against Gold, Silver, and the world&apos;s top economies!
           </p>
-          <div className="mt-4 text-sm text-gray-600 max-w-3xl mx-auto">
-            <p>
-              We use GDP (from {gdpYear}) to compare with market cap because it&apos;s within an order of magnitude of money supply, 
-              while reliable and consistent money supply data is difficult to obtain across all countries.
-            </p>
-          </div>
         </header>
         
         {/* Share Button */}
@@ -962,7 +956,7 @@ export default function Home() {
         {/* Footer */}
         <footer className="mt-8 text-center text-gray-500 text-sm">
           <p>Data sources: CoinGecko API for Bitcoin and metals pricing, static GDP data from IMF.</p>
-          <p className="mt-1">© {new Date().getFullYear()} Satoshi Forex. All rights reserved.</p>
+          <p className="mt-1">© {new Date().getFullYear()} Satoshis Forex. All rights reserved.</p>
         </footer>
       </div>
     </main>
