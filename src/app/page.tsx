@@ -14,11 +14,17 @@ interface Currency {
   type: 'crypto' | 'metal' | 'fiat';
 }
 
-// CoinGecko API response type
-interface CryptoData {
-  id: string;
-  current_price: number;
-  market_cap: number;
+// Direct CoinGecko API response type
+interface CoinGeckoResponse {
+  bitcoin: {
+    usd: number;
+    eur: number;
+    jpy: number;
+    gbp: number;
+    cny: number;
+    // And other currencies...
+    [key: string]: number; 
+  }
 }
 
 // Enable debug logging based on environment variable
@@ -26,7 +32,7 @@ const DEBUG_LOGGING = process.env.NEXT_PUBLIC_ENABLE_DEBUG_LOGGING === 'true';
 
 // Helper function for debugging
 function debugLog(...args: any[]) {
-  if (process.env.NODE_ENV === 'development') {
+  if (DEBUG_LOGGING || process.env.NODE_ENV === 'development') {
     console.log('[CLIENT]', ...args);
   }
 }
@@ -36,167 +42,238 @@ function clientError(...args: any[]) {
   console.error('[CLIENT ERROR]', ...args);
 }
 
-// Comprehensive country code to currency code mapping
-function mapCountryCodeToCurrency(countryCode: string): string | null {
-  const mapping: Record<string, string> = {
-    // All economies with ISO and alternate codes
-    "USA": "USD", // United States
-    "US": "USD", // United States (alternate code)
-    "EMU": "EUR", // Euro Area
-    "XS": "EUR", // Euro Area (alternate code)
-    "EA": "EUR", // Euro Area (alternate code)
-    "JPN": "JPY", // Japan
-    "JP": "JPY", // Japan (alternate code)
-    "GBR": "GBP", // United Kingdom
-    "GB": "GBP", // United Kingdom (alternate code)
-    "CHN": "CNY", // China
-    "CN": "CNY", // China (alternate code)
-    "IND": "INR", // India
-    "IN": "INR", // India (alternate code)
-    "CAN": "CAD", // Canada
-    "CA": "CAD", // Canada (alternate code)
-    "AUS": "AUD", // Australia
-    "AU": "AUD", // Australia (alternate code)
-    "BRA": "BRL", // Brazil
-    "BR": "BRL", // Brazil (alternate code)
-    "RUS": "RUB", // Russia
-    "RU": "RUB", // Russia (alternate code)
-    "KOR": "KRW", // South Korea
-    "KR": "KRW", // South Korea (alternate code)
-    "SGP": "SGD", // Singapore
-    "SG": "SGD", // Singapore (alternate code)
-    "CHE": "CHF", // Switzerland
-    "CH": "CHF", // Switzerland (alternate code)
-    "HKG": "HKD", // Hong Kong
-    "HK": "HKD", // Hong Kong (alternate code)
-    "SWE": "SEK", // Sweden
-    "SE": "SEK", // Sweden (alternate code)
-    "MEX": "MXN", // Mexico
-    "MX": "MXN", // Mexico (alternate code)
-    "ZAF": "ZAR", // South Africa
-    "ZA": "ZAR", // South Africa (alternate code)
-    "NOR": "NOK", // Norway
-    "NO": "NOK", // Norway (alternate code)
-    "NZL": "NZD", // New Zealand
-    "NZ": "NZD", // New Zealand (alternate code)
-    "THA": "THB", // Thailand
-    "TH": "THB", // Thailand (alternate code)
-    "TUR": "TRY", // Turkey
-    "TR": "TRY", // Turkey (alternate code)
-    "POL": "PLN", // Poland
-    "PL": "PLN", // Poland (alternate code)
-    "DNK": "DKK", // Denmark
-    "DK": "DKK", // Denmark (alternate code)
-    "IDN": "IDR", // Indonesia
-    "ID": "IDR", // Indonesia (alternate code)
-    "PHL": "PHP", // Philippines
-    "PH": "PHP", // Philippines (alternate code)
-    "MYS": "MYR", // Malaysia
-    "MY": "MYR", // Malaysia (alternate code)
-    "CZE": "CZK", // Czech Republic
-    "CZ": "CZK", // Czech Republic (alternate code)
-    "CHL": "CLP", // Chile
-    "CL": "CLP", // Chile (alternate code)
-    "ARG": "ARS", // Argentina
-    "AR": "ARS", // Argentina (alternate code)
-    "ISR": "ILS", // Israel
-    "IL": "ILS", // Israel (alternate code)
-    "COL": "COP", // Colombia
-    "CO": "COP", // Colombia (alternate code)
-    "SAU": "SAR", // Saudi Arabia
-    "SA": "SAR", // Saudi Arabia (alternate code)
-    "ARE": "AED", // United Arab Emirates
-    "AE": "AED", // United Arab Emirates (alternate code)
-    "TWN": "TWD", // Taiwan
-    "TW": "TWD", // Taiwan (alternate code)
-    "ROU": "RON", // Romania
-    "RO": "RON", // Romania (alternate code)
-    "HUN": "HUF", // Hungary
-    "HU": "HUF", // Hungary (alternate code)
-    "VNM": "VND", // Vietnam
-    "VN": "VND", // Vietnam (alternate code)
-    "PAK": "PKR", // Pakistan
-    "PK": "PKR", // Pakistan (alternate code)
-    "NGA": "NGN", // Nigeria
-    "NG": "NGN", // Nigeria (alternate code)
-    
-    // Euro-using countries (Eurozone)
-    "AUT": "EUR", // Austria
-    "BEL": "EUR", // Belgium
-    "HRV": "EUR", // Croatia
-    "CYP": "EUR", // Cyprus
-    "EST": "EUR", // Estonia
-    "FIN": "EUR", // Finland
-    "FRA": "EUR", // France
-    "DEU": "EUR", // Germany
-    "GRC": "EUR", // Greece
-    "IRL": "EUR", // Ireland
-    "ITA": "EUR", // Italy
-    "LVA": "EUR", // Latvia
-    "LTU": "EUR", // Lithuania
-    "LUX": "EUR", // Luxembourg
-    "MLT": "EUR", // Malta
-    "NLD": "EUR", // Netherlands
-    "PRT": "EUR", // Portugal
-    "SVK": "EUR", // Slovakia
-    "SVN": "EUR", // Slovenia
-    "ESP": "EUR", // Spain
+// Define API URL for CoinGecko
+const COINGECKO_API_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,eur,jpy,gbp,cny,inr,cad,aud,brl,rub,krw,sgd,chf,hkd,sek,mxn,zar,nok,nzd,thb,try,pln,dkk,idr,php,myr,czk,clp,ars,ils,cop,sar,aed,twd,ron,huf,vnd,pkr,ngn,xau,xag';
+
+// Define the return type for fetchData
+interface FetchDataResult {
+  bitcoinData: CoinGeckoResponse;
+  gdpData: {
+    year: number;
+    data: Record<string, number>;
   };
-  
-  return mapping[countryCode] || null;
+  btcPriceUSD: number;
 }
 
-// Hardcoded table of Euro-using countries with their ISO codes
+// Function to fetch data from APIs and static files
+async function fetchData(): Promise<FetchDataResult> {
+  debugLog("Starting client-side data fetching...");
+  
+  try {
+    // Fetch Bitcoin data directly from CoinGecko
+    debugLog("Fetching Bitcoin data directly from CoinGecko API...");
+    
+    let bitcoinData: CoinGeckoResponse;
+    try {
+      const coinGeckoResponse = await fetch(COINGECKO_API_URL);
+      
+      if (!coinGeckoResponse.ok) {
+        const errorText = await coinGeckoResponse.text();
+        debugLog('Error fetching CoinGecko data:', coinGeckoResponse.status, errorText);
+        throw new Error(`Failed to fetch CoinGecko data: ${coinGeckoResponse.status} - ${errorText}`);
+      }
+      
+      bitcoinData = await coinGeckoResponse.json();
+      debugLog("Bitcoin data fetched successfully", bitcoinData);
+    } catch (error) {
+      clientError("Failed to fetch Bitcoin data:", error);
+      throw new Error(`Failed to fetch Bitcoin data: ${error instanceof Error ? error.message : String(error)}`);
+    }
+    
+    // Fetch GDP data from local static JSON file
+    debugLog("Fetching GDP data from static JSON file...");
+    
+    let gdpData: Record<string, number> = {};
+    let gdpYear = new Date().getFullYear();
+    
+    try {
+      // From https://www.imf.org/external/datamapper/api/v1/NGDPD?periods=2024
+      const imfResponse = await fetch('/data/imf-gdp-data.json');
+      
+      if (!imfResponse.ok) {
+        const errorText = await imfResponse.text();
+        debugLog('Error fetching IMF data from file:', imfResponse.status, errorText);
+        throw new Error(`Failed to fetch IMF data from file: ${imfResponse.status} - ${errorText}`);
+      }
+      
+      const imfResponseData = await imfResponse.json();
+      debugLog("GDP data fetched successfully from file", imfResponseData);
+      
+      // Set the year from the file if available, otherwise use current year
+      if (imfResponseData.year) {
+        gdpYear = imfResponseData.year;
+      }
+      
+      // Process the GDP data - assumes the file has a data property with country codes as keys
+      if (imfResponseData.data && typeof imfResponseData.data === 'object') {
+        gdpData = imfResponseData.data;
+      } else {
+        throw new Error("GDP data from file doesn't have the expected structure");
+      }
+    } catch (error) {
+      clientError("Failed to fetch GDP data:", error);
+      throw new Error(`Failed to fetch GDP data: ${error instanceof Error ? error.message : String(error)}`);
+    }
+    
+    // Extract Bitcoin price and return the data
+    const btcPriceUSD = bitcoinData.bitcoin.usd;
+    debugLog("BTC price in USD:", btcPriceUSD);
+    
+    return {
+      bitcoinData,
+      gdpData: {
+        year: gdpYear,
+        data: gdpData
+      },
+      btcPriceUSD
+    };
+  } catch (error) {
+    clientError("Error in fetchData:", error);
+    throw error;
+  }
+}
+
+// Comprehensive country code to currency code mapping
+const CountryCodeToCurrencyCode: Record<string, string> = {
+  // All economies with ISO and alternate codes
+  "USA": "USD", // United States
+  "US": "USD", // United States (alternate code)
+  "EMU": "EUR", // Euro Area
+  "XS": "EUR", // Euro Area (alternate code)
+  "EA": "EUR", // Euro Area (alternate code)
+  "JPN": "JPY", // Japan
+  "JP": "JPY", // Japan (alternate code)
+  "GBR": "GBP", // United Kingdom
+  "GB": "GBP", // United Kingdom (alternate code)
+  "CHN": "CNY", // China
+  "CN": "CNY", // China (alternate code)
+  "IND": "INR", // India
+  "IN": "INR", // India (alternate code)
+  "CAN": "CAD", // Canada
+  "CA": "CAD", // Canada (alternate code)
+  "AUS": "AUD", // Australia
+  "AU": "AUD", // Australia (alternate code)
+  "BRA": "BRL", // Brazil
+  "BR": "BRL", // Brazil (alternate code)
+  "RUS": "RUB", // Russia
+  "RU": "RUB", // Russia (alternate code)
+  "KOR": "KRW", // South Korea
+  "KR": "KRW", // South Korea (alternate code)
+  "SGP": "SGD", // Singapore
+  "SG": "SGD", // Singapore (alternate code)
+  "CHE": "CHF", // Switzerland
+  "CH": "CHF", // Switzerland (alternate code)
+  "HKG": "HKD", // Hong Kong
+  "HK": "HKD", // Hong Kong (alternate code)
+  "SWE": "SEK", // Sweden
+  "SE": "SEK", // Sweden (alternate code)
+  "MEX": "MXN", // Mexico
+  "MX": "MXN", // Mexico (alternate code)
+  "ZAF": "ZAR", // South Africa
+  "ZA": "ZAR", // South Africa (alternate code)
+  "NOR": "NOK", // Norway
+  "NO": "NOK", // Norway (alternate code)
+  "NZL": "NZD", // New Zealand
+  "NZ": "NZD", // New Zealand (alternate code)
+  "THA": "THB", // Thailand
+  "TH": "THB", // Thailand (alternate code)
+  "TUR": "TRY", // Turkey
+  "TR": "TRY", // Turkey (alternate code)
+  "POL": "PLN", // Poland
+  "PL": "PLN", // Poland (alternate code)
+  "DNK": "DKK", // Denmark
+  "DK": "DKK", // Denmark (alternate code)
+  "IDN": "IDR", // Indonesia
+  "ID": "IDR", // Indonesia (alternate code)
+  "PHL": "PHP", // Philippines
+  "PH": "PHP", // Philippines (alternate code)
+  "MYS": "MYR", // Malaysia
+  "MY": "MYR", // Malaysia (alternate code)
+  "CZE": "CZK", // Czech Republic
+  "CZ": "CZK", // Czech Republic (alternate code)
+  "CHL": "CLP", // Chile
+  "CL": "CLP", // Chile (alternate code)
+  "ARG": "ARS", // Argentina
+  "AR": "ARS", // Argentina (alternate code)
+  "ISR": "ILS", // Israel
+  "IL": "ILS", // Israel (alternate code)
+  "COL": "COP", // Colombia
+  "CO": "COP", // Colombia (alternate code)
+  "SAU": "SAR", // Saudi Arabia
+  "SA": "SAR", // Saudi Arabia (alternate code)
+  "ARE": "AED", // United Arab Emirates
+  "AE": "AED", // United Arab Emirates (alternate code)
+  "TWN": "TWD", // Taiwan
+  "TW": "TWD", // Taiwan (alternate code)
+  "ROU": "RON", // Romania
+  "RO": "RON", // Romania (alternate code)
+  "HUN": "HUF", // Hungary
+  "HU": "HUF", // Hungary (alternate code)
+  "VNM": "VND", // Vietnam
+  "VN": "VND", // Vietnam (alternate code)
+  "PAK": "PKR", // Pakistan
+  "PK": "PKR", // Pakistan (alternate code)
+  "NGA": "NGN", // Nigeria
+  "NG": "NGN", // Nigeria (alternate code)
+  
+  // Euro-using countries (Eurozone)
+  "AUT": "EUR", // Austria
+  "BEL": "EUR", // Belgium
+  "HRV": "EUR", // Croatia
+  "CYP": "EUR", // Cyprus
+  "EST": "EUR", // Estonia
+  "FIN": "EUR", // Finland
+  "FRA": "EUR", // France
+  "DEU": "EUR", // Germany
+  "GRC": "EUR", // Greece
+  "IRL": "EUR", // Ireland
+  "ITA": "EUR", // Italy
+  "LVA": "EUR", // Latvia
+  "LTU": "EUR", // Lithuania
+  "LUX": "EUR", // Luxembourg
+  "MLT": "EUR", // Malta
+  "NLD": "EUR", // Netherlands
+  "PRT": "EUR", // Portugal
+  "SVK": "EUR", // Slovakia
+  "SVN": "EUR", // Slovenia
+  "ESP": "EUR", // Spain
+};
+
+// Eurozone country codes
 const EUROZONE_COUNTRIES = [
-  { name: "Austria", isoCode: "AUT" },
-  { name: "Belgium", isoCode: "BEL" },
-  { name: "Croatia", isoCode: "HRV" },
-  { name: "Cyprus", isoCode: "CYP" },
-  { name: "Estonia", isoCode: "EST" },
-  { name: "Finland", isoCode: "FIN" },
-  { name: "France", isoCode: "FRA" },
-  { name: "Germany", isoCode: "DEU" },
-  { name: "Greece", isoCode: "GRC" },
-  { name: "Ireland", isoCode: "IRL" },
-  { name: "Italy", isoCode: "ITA" },
-  { name: "Latvia", isoCode: "LVA" },
-  { name: "Lithuania", isoCode: "LTU" },
-  { name: "Luxembourg", isoCode: "LUX" },
-  { name: "Malta", isoCode: "MLT" },
-  { name: "Netherlands", isoCode: "NLD" },
-  { name: "Portugal", isoCode: "PRT" },
-  { name: "Slovakia", isoCode: "SVK" },
-  { name: "Slovenia", isoCode: "SVN" },
-  { name: "Spain", isoCode: "ESP" }
+  'AUT', 'BEL', 'CYP', 'EST', 'FIN', 'FRA', 'DEU', 'GRC', 'IRL', 'ITA',
+  'LVA', 'LTU', 'LUX', 'MLT', 'NLD', 'PRT', 'SVK', 'SVN', 'ESP', 'HRV'
 ];
 
-// Helper function to check if a country is in the Eurozone
+// Function to map country code to currency code
+function mapCountryCodeToCurrency(countryCode: string): string | null {
+  return CountryCodeToCurrencyCode[countryCode] || null;
+}
+
+// Check if a country is in the Eurozone
 function isEurozoneCountry(countryCode: string): boolean {
-  return EUROZONE_COUNTRIES.some(country => country.isoCode === countryCode);
+  return EUROZONE_COUNTRIES.includes(countryCode);
 }
 
 export default function Home() {
   const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [apiErrors, setApiErrors] = useState<{[key: string]: {error: string; source: string}}>({});
+  const [apiErrors, setApiErrors] = useState<Record<string, {error: string, source: string}>>({});
   const tableRef = useRef<HTMLDivElement>(null);
   
-  // Add state for Bitcoin-to-fiat prices
+  // State for Bitcoin data timestamp
+  const [bitcoinPriceTimestamp, setBitcoinPriceTimestamp] = useState<string | null>(null);
+  const [gdpDataTimestamp, setGdpDataTimestamp] = useState<string | null>(null);
+
+  // State for Bitcoin prices in different currencies
   const [bitcoinPrices, setBitcoinPrices] = useState<Record<string, number>>({});
   
-  const [goldSilverPrices, setGoldSilverPrices] = useState<{gold: number | null; silver: number | null}>({
+  // State for Gold and Silver prices
+  const [goldSilverPrices, setGoldSilverPrices] = useState<{gold: number | null, silver: number | null}>({
     gold: null,
     silver: null
   });
-  
-  // Add state for tracking if we're using cached data
-  const [usingCachedCoinGeckoData, setUsingCachedCoinGeckoData] = useState(false);
-  const [usingCachedImfData, setUsingCachedImfData] = useState(false);
-  
-  // Add state for tracking timestamps of cached data
-  const [bitcoinPriceTimestamp, setBitcoinPriceTimestamp] = useState<number>(0);
-  const [gdpDataTimestamp, setGdpDataTimestamp] = useState<number>(0);
   
   // Number of top currencies to display (excluding Bitcoin, Gold, and Silver)
   const TOP_CURRENCIES_LIMIT = 30;
@@ -240,364 +317,156 @@ export default function Home() {
   };
 
   useEffect(() => {
-    async function fetchData() {
+    async function loadData() {
       try {
         setLoading(true);
         setError(null);
         setApiErrors({});
         
-        // --- BITCOIN DATA ---
-        let bitcoin;
-        let bitcoinToFiatPrices: Record<string, number> = {}; // No fallbacks
+        // Fetch data directly from external APIs
+        const data: FetchDataResult = await fetchData();
         
-        try {
-          // Fetch Bitcoin data from our CoinGecko API route
-          debugLog("Fetching Bitcoin data from CoinGecko API route...");
-          
-          const coinGeckoResponse = await fetch('/api/coingecko', { cache: 'no-store' });
-          
-          if (!coinGeckoResponse.ok) {
-            const errorText = await coinGeckoResponse.text();
-            debugLog('Error fetching CoinGecko data:', coinGeckoResponse.status, errorText);
-            throw new Error(`Failed to fetch CoinGecko data: ${coinGeckoResponse.status} - ${errorText}`);
-          }
-          
-          const coinGeckoResponseData = await coinGeckoResponse.json();
-          debugLog('CoinGecko data response:', coinGeckoResponseData);
-          
-          // Check if we're using cached data
-          if (coinGeckoResponseData.source === 'cache') {
-            debugLog('⚠️ Using CACHED Bitcoin price data');
-            setUsingCachedCoinGeckoData(true);
-          } else {
-            debugLog('✅ Using REAL Bitcoin price data');
-            setUsingCachedCoinGeckoData(false);
-          }
-          
-          // Store the timestamp
-          setBitcoinPriceTimestamp(coinGeckoResponseData.timestamp);
-          
-          const btcData = coinGeckoResponseData.data;
-          
-          // Process the Bitcoin data
-          if (btcData && btcData.bitcoin) {
-            // Extract Bitcoin price in USD for market cap calculation
-            const btcUsdPrice = btcData.bitcoin.usd;
-            
-            if (!btcUsdPrice) {
-              throw new Error("Bitcoin price in USD not found in CoinGecko data");
-            }
-            
-            // With simplified API response, we need to estimate market cap
-            // Market cap = Price * Circulating Supply (approx. 19.5M BTC)
-            const estimatedCirculatingSupply = 19500000;
-            const btcUsdMarketCap = btcUsdPrice * estimatedCirculatingSupply;
-            
-            // Create Bitcoin object for consistency with rest of code
-            bitcoin = {
-              id: "bitcoin",
-              name: "Bitcoin",
-              current_price: btcUsdPrice,
-              market_cap: btcUsdMarketCap,
-            };
-            
-            // Extract all Bitcoin prices in different currencies
-            // The response now only contains direct price values
-            Object.keys(btcData.bitcoin).forEach(key => {
-              bitcoinToFiatPrices[key] = btcData.bitcoin[key];
-            });
-            
-            // Save Bitcoin prices to state
-            debugLog(`Setting Bitcoin prices in state: ${JSON.stringify(bitcoinToFiatPrices, null, 2)}`);
-            setBitcoinPrices(bitcoinToFiatPrices);
-            
-            // Log a sample of the Bitcoin prices for debugging
-            const sampleCurrencies = ['usd', 'eur', 'jpy', 'gbp', 'cny'];
-            debugLog("Sample Bitcoin prices:");
-            sampleCurrencies.forEach(code => {
-              if (bitcoinToFiatPrices[code]) {
-                debugLog(`  ${code.toUpperCase()}: ${bitcoinToFiatPrices[code]} (1 SATS = ${bitcoinToFiatPrices[code] / 100000000} ${code.toUpperCase()}, ${100000000 / bitcoinToFiatPrices[code]} SATS per ${code.toUpperCase()})`);
-              } else {
-                debugLog(`  ${code.toUpperCase()}: Not available`);
-              }
-            });
-            
-            debugLog("Processed Bitcoin prices for", Object.keys(bitcoinToFiatPrices).length, "currencies");
-          } else {
-            throw new Error("Invalid Bitcoin data format from CoinGecko API");
-          }
-        } catch (error) {
-          clientError("Error fetching Bitcoin data:", error);
-          
-          // Set error in API errors state
-          setApiErrors(prev => ({
-            ...prev, 
-            bitcoin: {
-              error: error instanceof Error ? error.message : String(error),
-              source: 'Error fetching from CoinGecko API'
-            }
-          }));
-          
-          // Set main error state to show error message to user
-          setError(`Failed to load Bitcoin price data: ${error instanceof Error ? error.message : String(error)}. Please try again later.`);
-          setLoading(false);
-          return; // Exit the fetchData function early
-        }
+        // Extract and process Bitcoin data
+        const { bitcoinData, gdpData } = data;
+        const btcPriceUSD = bitcoinData.bitcoin.usd;
         
-        // --- CALCULATE GOLD & SILVER PRICES FROM BITCOIN PRICES ---
-        // Hardcoded assumptions for gold and silver supply
-        const GOLD_SUPPLY_METRIC_TONS = 215000; // 215,000 metric tons of surface gold
-        const SILVER_SUPPLY_METRIC_TONS = 1800000; // 1,800,000 metric tons of surface silver
-
-        // Conversion factors
-        const METRIC_TON_TO_TROY_OUNCES = 32150.746; // 1 metric ton = 32,150.746 troy ounces
-
-        // Get gold and silver prices from Bitcoin prices
-        let goldPrice: number | null = null;
-        let silverPrice: number | null = null;
+        // Store Bitcoin prices for use in calculations
+        setBitcoinPrices(bitcoinData.bitcoin);
         
-        // If we have Bitcoin prices for XAU (gold) and XAG (silver), use them to calculate USD prices
-        if (bitcoinToFiatPrices['xau'] && bitcoinToFiatPrices['usd']) {
-          // Bitcoin price in USD / Bitcoin price in XAU = USD price per troy ounce of gold
-          goldPrice = bitcoinToFiatPrices['usd'] / (bitcoinToFiatPrices['xau'] / 1);
-          debugLog("Calculated Gold price from Bitcoin prices:", goldPrice, "USD per troy ounce");
-        } else {
-          debugLog("⚠️ Cannot calculate Gold price: missing Bitcoin price in XAU or USD");
-          setApiErrors(prev => ({
-            ...prev, 
-            gold: {
-              error: 'Missing Bitcoin price in XAU or USD',
-              source: 'Cannot calculate Gold price from CoinGecko data'
-            }
-          }));
-        }
-        
-        if (bitcoinToFiatPrices['xag'] && bitcoinToFiatPrices['usd']) {
-          // Bitcoin price in USD / Bitcoin price in XAG = USD price per troy ounce of silver
-          silverPrice = bitcoinToFiatPrices['usd'] / (bitcoinToFiatPrices['xag'] / 1);
-          debugLog("Calculated Silver price from Bitcoin prices:", silverPrice, "USD per troy ounce");
-        } else {
-          debugLog("⚠️ Cannot calculate Silver price: missing Bitcoin price in XAG or USD");
-          setApiErrors(prev => ({
-            ...prev, 
-            silver: {
-              error: 'Missing Bitcoin price in XAG or USD',
-              source: 'Cannot calculate Silver price from CoinGecko data'
-            }
-          }));
-        }
-        
-        // Set gold and silver prices in state
-        setGoldSilverPrices({
-          gold: goldPrice,
-          silver: silverPrice
-        });
-        
-        // Calculate market caps based on supply and current prices
-        const goldMarketCap = goldPrice !== null ? GOLD_SUPPLY_METRIC_TONS * METRIC_TON_TO_TROY_OUNCES * goldPrice : null;
-        const silverMarketCap = silverPrice !== null ? SILVER_SUPPLY_METRIC_TONS * METRIC_TON_TO_TROY_OUNCES * silverPrice : null;
-
-        if (goldPrice !== null) {
-          debugLog("Gold price (USD per troy ounce):", goldPrice);
-          debugLog("Gold market cap (USD):", goldMarketCap);
-        }
-        
-        if (silverPrice !== null) {
-          debugLog("Silver price (USD per troy ounce):", silverPrice);
-          debugLog("Silver market cap (USD):", silverMarketCap);
-        }
-        
-        // --- GDP DATA ---
-        debugLog("Fetching GDP data via proxy...");
-        let gdpData: Record<string, number> = {};
-        let eurozoneGdpData: Record<string, number> = {};
+        // Process GDP data
+        const processedGdpData: Record<string, number> = {};
+        const eurozoneGdpData: Record<string, number> = {};
         let totalEurozoneGdp = 0;
         
-        try {
-          const gdpResponse = await fetch('/api/imf');
-          
-          if (!gdpResponse.ok) {
-            const errorText = await gdpResponse.text();
-            debugLog('Error fetching GDP data:', gdpResponse.status, errorText);
-            throw new Error(`Failed to fetch GDP data: ${gdpResponse.status} - ${errorText}`);
+        // Current timestamp for data freshness
+        const currentTimestamp = new Date().toISOString();
+        setBitcoinPriceTimestamp(currentTimestamp);
+        setGdpDataTimestamp(currentTimestamp);
+        
+        // Process the GDP data from the JSON file
+        for (const [countryCode, gdpValue] of Object.entries(gdpData.data)) {
+          // Calculate Eurozone GDP
+          if (isEurozoneCountry(countryCode)) {
+            const gdpValueAbsolute = gdpValue * 1000000000; // Convert from billions to absolute
+            eurozoneGdpData[countryCode] = gdpValueAbsolute;
+            totalEurozoneGdp += gdpValueAbsolute;
+            
+            debugLog(`Eurozone country: ${countryCode} GDP: $${formatNumber(gdpValueAbsolute)}`);
           }
           
-          const imfResponse = await gdpResponse.json();
-          debugLog('IMF data response:', imfResponse);
-          
-          // Only show warning for error-based cache, not regular cache
-          if (imfResponse.source === 'cache (error)') {
-            debugLog('⚠️ Using CACHED IMF GDP data due to error from year:', imfResponse.year);
-            setUsingCachedImfData(true);
-          } else {
-            // Normal operation - either fresh data or regular cache
-            debugLog('✅ Using IMF GDP data from year:', imfResponse.year);
-            setUsingCachedImfData(false);
+          // Map country codes to currency codes
+          const currencyCode = mapCountryCodeToCurrency(countryCode);
+          if (currencyCode && typeof gdpValue === 'number') {
+            // Convert from billions to absolute values (IMF data is in billions)
+            processedGdpData[currencyCode] = gdpValue * 1000000000;
+            debugLog(`Mapped ${countryCode} to currency ${currencyCode}`);
           }
-          
-          // Store the timestamp
-          setGdpDataTimestamp(imfResponse.timestamp);
-          
-          // Process the GDP data
-          if (imfResponse.data) {
-            debugLog("Processing GDP data");
-            
-            // Track Eurozone countries and their GDP
-            let eurozoneCountriesFound = 0;
-            
-            // Loop through each country in the data object
-            for (const [countryCode, gdpValue] of Object.entries(imfResponse.data)) {
-              // Check if this is a Eurozone country
-              if (isEurozoneCountry(countryCode) && typeof gdpValue === 'number') {
-                const gdpValueAbsolute = gdpValue * 1000000000; // Convert from billions to absolute values
-                eurozoneGdpData[countryCode] = gdpValueAbsolute;
-                totalEurozoneGdp += gdpValueAbsolute;
-                eurozoneCountriesFound++;
-                
-                // Log Eurozone country GDP for debugging
-                debugLog(`Eurozone country: ${countryCode} GDP: $${formatNumber(gdpValueAbsolute)}`);
-              }
-              
-              const currencyCode = mapCountryCodeToCurrency(countryCode);
-              if (currencyCode && typeof gdpValue === 'number') {
-                // Convert from billions to absolute values (IMF data is in billions)
-                gdpData[currencyCode] = gdpValue * 1000000000;
-                
-                // Log country name for debugging
-                debugLog(`Mapped ${countryCode} to currency ${currencyCode}`);
-              }
-            }
-            
-            debugLog(`Processed ${Object.keys(gdpData).length} GDP values from IMF API`);
-            debugLog(`Found ${eurozoneCountriesFound} Eurozone countries with a total GDP of $${formatNumber(totalEurozoneGdp)}`);
-            
-            // Add the combined Eurozone GDP to the gdpData object
-            gdpData["EUR"] = totalEurozoneGdp;
-          } else {
-            throw new Error('IMF API response does not contain data');
-          }
-        } catch (error) {
-          clientError("Error fetching GDP data:", error);
-          const errorText = error instanceof Error ? error.message : String(error);
-          setApiErrors(prev => {
-            return {
-              ...prev, 
-              gdp: {
-                error: errorText, 
-                source: 'Error fetching from IMF API'
-              }
-            };
-          });
-          
-          // Set error state to show error message to user
-          setError(`Failed to load GDP data: ${errorText}. Please try again later.`);
-          setLoading(false);
-          return; // Exit the fetchData function early
         }
         
-        // Show the data we're using
-        debugLog("Final GDP data used:", gdpData);
-        debugLog("Eurozone GDP breakdown:", eurozoneGdpData);
-        debugLog("Total Eurozone GDP:", totalEurozoneGdp);
+        // Add the combined Eurozone GDP
+        processedGdpData["EUR"] = totalEurozoneGdp;
         
-        // Create helper functions that use bitcoinToFiatPrices directly
-        const getBitcoinPriceDirectly = (code: string): number | null => {
-          const lowerCode = code.toLowerCase();
-          if (bitcoinToFiatPrices[lowerCode] !== undefined) {
-            debugLog(`Direct BTC price for ${code}: ${bitcoinToFiatPrices[lowerCode]}`);
-            return bitcoinToFiatPrices[lowerCode];
-          }
-          debugLog(`No direct BTC price for ${code}, returning null`);
-          return null;
-        };
+        debugLog(`Processed ${Object.keys(processedGdpData).length} GDP values from JSON file`);
+        debugLog(`Found ${Object.keys(eurozoneGdpData).length} Eurozone countries with total GDP: $${formatNumber(totalEurozoneGdp)}`);
         
-        const calculateSatoshiValueDirectly = (currencyCode: string): number | null => {
-          const btcPrice = getBitcoinPriceDirectly(currencyCode);
-          if (btcPrice === null) return null;
-          
-          const result = btcPrice / 100000000;
-          debugLog(`Direct SATS value for ${currencyCode}: ${result}`);
-          return result;
-        };
-        
-        const calculateSatsPerUnitDirectly = (currencyCode: string): number | null => {
-          const btcPrice = getBitcoinPriceDirectly(currencyCode);
-          if (btcPrice === null) return null;
-          
-          const result = 100000000 / btcPrice;
-          debugLog(`Direct SATS per unit for ${currencyCode}: ${result}`);
-          return result;
-        };
-        
-        // Prepare the data
+        // Prepare the currencies array for the UI
         const allCurrencies: Currency[] = [];
+        
+        // Calculate Bitcoin market cap (price * circulating supply)
+        const estimatedCirculatingSupply = 19500000; // ~19.5M BTC in circulation
+        const btcMarketCap = btcPriceUSD * estimatedCirculatingSupply;
+        
+        // Add Bitcoin to the currencies array
+        allCurrencies.push({
+          rank: 0, // Will be set after sorting
+          code: "BTC",
+          name: "Bitcoin",
+          economicSize: btcMarketCap,
+          satsPerUnit: 100000000, // 1 BTC = 100,000,000 sats
+          valueOfOneSat: btcPriceUSD / 100000000, // Value of 1 sat in USD
+          type: 'crypto'
+        });
+        
+        // Add Gold and Silver if prices are available
+        if (bitcoinData.bitcoin.xau) {
+          // Calculate Gold price in USD
+          const goldPrice = btcPriceUSD / (bitcoinData.bitcoin.xau / 1);
+          debugLog("Gold price in USD:", goldPrice);
+          
+          // Calculate Gold market cap
+          const GOLD_SUPPLY_METRIC_TONS = 215000; // 215,000 metric tons of surface gold
+          const METRIC_TON_TO_TROY_OUNCES = 32150.746; // 1 metric ton = 32,150.746 troy ounces
+          const goldMarketCap = GOLD_SUPPLY_METRIC_TONS * METRIC_TON_TO_TROY_OUNCES * goldPrice;
+          
+          // Calculate sats per unit and value of one sat for Gold
+          const goldSatsPerUnit = 100000000 / bitcoinData.bitcoin.xau;
+          const goldSatValue = bitcoinData.bitcoin.xau / 100000000;
+          
+          allCurrencies.push({
+            rank: 0,
+            code: "XAU",
+            name: "Gold",
+            economicSize: goldMarketCap,
+            satsPerUnit: goldSatsPerUnit,
+            valueOfOneSat: goldSatValue,
+            type: 'metal'
+          });
+          
+          // Store gold price for reference
+          setGoldSilverPrices(prev => ({
+            ...prev,
+            gold: goldPrice
+          }));
+        }
+        
+        if (bitcoinData.bitcoin.xag) {
+          // Calculate Silver price in USD
+          const silverPrice = btcPriceUSD / (bitcoinData.bitcoin.xag / 1);
+          debugLog("Silver price in USD:", silverPrice);
+          
+          // Calculate Silver market cap
+          const SILVER_SUPPLY_METRIC_TONS = 1800000; // 1,800,000 metric tons of surface silver
+          const METRIC_TON_TO_TROY_OUNCES = 32150.746; // 1 metric ton = 32,150.746 troy ounces
+          const silverMarketCap = SILVER_SUPPLY_METRIC_TONS * METRIC_TON_TO_TROY_OUNCES * silverPrice;
+          
+          // Calculate sats per unit and value of one sat for Silver
+          const silverSatsPerUnit = 100000000 / bitcoinData.bitcoin.xag;
+          const silverSatValue = bitcoinData.bitcoin.xag / 100000000;
+          
+          allCurrencies.push({
+            rank: 0,
+            code: "XAG",
+            name: "Silver",
+            economicSize: silverMarketCap,
+            satsPerUnit: silverSatsPerUnit,
+            valueOfOneSat: silverSatValue,
+            type: 'metal'
+          });
+          
+          // Store silver price for reference
+          setGoldSilverPrices(prev => ({
+            ...prev,
+            silver: silverPrice
+          }));
+        }
+        
+        // Now add fiat currencies
         const fiatCurrencies: Currency[] = [];
         
-        // Add Bitcoin
-        if (bitcoin) {
-          allCurrencies.push({
-            rank: 0, // Will be set after sorting
-            code: "BTC",
-            name: "Bitcoin",
-            economicSize: bitcoin.market_cap,
-            satsPerUnit: 100000000, // 1 BTC = 100,000,000 SATS
-            valueOfOneSat: calculateSatoshiValueDirectly("usd") || 0, // Value of 1 sat in USD
-            type: 'crypto'
-          });
-        }
-        
-        // Add Gold with real-time price
-        if (goldMarketCap !== null && goldPrice !== null) {
-          const goldSatsPerUnit = calculateSatsPerUnitDirectly("xau");
-          const goldSatValue = calculateSatoshiValueDirectly("xau");
-          
-          if (goldSatsPerUnit !== null && goldSatValue !== null) {
-            allCurrencies.push({
-              rank: 0,
-              code: "XAU",
-              name: "Gold",
-              economicSize: goldMarketCap,
-              satsPerUnit: goldSatsPerUnit, // Sats per troy ounce of gold
-              valueOfOneSat: goldSatValue, // Value of 1 sat in gold
-              type: 'metal'
-            });
-          }
-        }
-        
-        // Add Silver with real-time price
-        if (silverMarketCap !== null && silverPrice !== null) {
-          const silverSatsPerUnit = calculateSatsPerUnitDirectly("xag");
-          const silverSatValue = calculateSatoshiValueDirectly("xag");
-          
-          if (silverSatsPerUnit !== null && silverSatValue !== null) {
-            allCurrencies.push({
-              rank: 0,
-              code: "XAG",
-              name: "Silver",
-              economicSize: silverMarketCap,
-              satsPerUnit: silverSatsPerUnit, // Sats per troy ounce of silver
-              valueOfOneSat: silverSatValue, // Value of 1 sat in silver
-              type: 'metal'
-            });
-          }
-        }
-        
-        // Now add all the fiat currencies
-        Object.keys(gdpData).forEach((currencyCode) => {
+        Object.keys(processedGdpData).forEach((currencyCode) => {
           if (currencyCode === "BTC" || currencyCode === "XAU" || currencyCode === "XAG") {
             return; // Skip non-fiat currencies
           }
           
-          // Use GDP data directly - IMF data is already in USD
-          const gdpInUSD = gdpData[currencyCode] || 0;
+          // Get GDP in USD
+          const gdpInUSD = processedGdpData[currencyCode] || 0;
           
-          // For Bitcoin calculations, try to use direct Bitcoin prices from CoinGecko
-          // These don't require exchange rates and are more accurate
-          const satsPerUnit = calculateSatsPerUnitDirectly(currencyCode);
-          const satoshiValue = calculateSatoshiValueDirectly(currencyCode);
+          // Try to get Bitcoin price for this currency
+          const lowerCurrencyCode = currencyCode.toLowerCase();
+          const btcPrice = bitcoinData.bitcoin[lowerCurrencyCode];
           
           // Skip currencies without Bitcoin prices
-          if (satsPerUnit === null || satoshiValue === null) {
+          if (!btcPrice) {
             debugLog(`Skipping currency ${currencyCode} due to missing Bitcoin price`);
             setApiErrors(prev => ({
               ...prev,
@@ -609,10 +478,12 @@ export default function Home() {
             return;
           }
           
-          debugLog(`Currency ${currencyCode}: GDP = ${gdpInUSD}, BTC price = ${getBitcoinPriceDirectly(currencyCode)}, satsPerUnit = ${satsPerUnit}, satoshiValue = ${satoshiValue}`);
+          // Calculate sats per unit and value of one sat
+          const satsPerUnit = 100000000 / btcPrice;
+          const satoshiValue = btcPrice / 100000000;
           
           fiatCurrencies.push({
-            rank: 0, // Will be set after sorting
+            rank: 0,
             code: currencyCode,
             name: getCurrencyName(currencyCode) || currencyCode,
             economicSize: gdpInUSD,
@@ -622,23 +493,13 @@ export default function Home() {
           });
         });
         
-        // Debug logging for currency counts
-        debugLog("Total fiat currencies before filtering:", fiatCurrencies.length);
-        
-        // Sort fiat currencies by economic size and take only the top ones
+        // Sort fiat currencies by economic size and take top ones
         const topFiatCurrencies = fiatCurrencies
           .sort((a, b) => b.economicSize - a.economicSize)
           .slice(0, TOP_CURRENCIES_LIMIT);
         
-        // More debug logging
-        debugLog("Top fiat currencies after filtering:", topFiatCurrencies.length);
-        debugLog("TOP_CURRENCIES_LIMIT value:", TOP_CURRENCIES_LIMIT);
-        
-        // Add the top fiat currencies to the main array
+        // Add top fiat currencies to the main array
         allCurrencies.push(...topFiatCurrencies);
-        
-        // Final debug logging
-        debugLog("Total currencies after adding top fiat currencies:", allCurrencies.length);
         
         // Check if we have any currencies to display
         if (allCurrencies.length === 0) {
@@ -655,25 +516,17 @@ export default function Home() {
             rank: index + 1
           }));
         
-        debugLog("Final sorted currencies count:", sortedCurrencies.length);
-        
-        // Log the currency values for debugging
-        console.log("CURRENCIES:", sortedCurrencies);
-        
+        // Set the currencies in state
         setCurrencies(sortedCurrencies);
         setLoading(false);
       } catch (error) {
-        clientError("Error in main fetchData function:", error);
-        setError("Failed to load data. Please try again later.");
+        clientError("Error in loadData function:", error);
         setLoading(false);
+        setError(`Failed to load data: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
     
-    fetchData();
-    
-    // In a production environment, you'd set up a refresh interval
-    // const interval = setInterval(fetchData, 3600000); // Refresh every hour
-    // return () => clearInterval(interval);
+    loadData();
   }, []);
   
   // Function to handle sharing the table as an image
@@ -878,6 +731,34 @@ export default function Home() {
           </button>
         </div>
         
+        {/* Notifications area */}
+        <div className="mb-4 space-y-2">
+          {/* Error message if any */}
+          {error && (
+            <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded relative" role="alert">
+              <strong className="font-bold">Error:</strong>
+              <span className="block sm:inline"> {error}</span>
+            </div>
+          )}
+          
+          {/* API warnings only shown during development */}
+          {process.env.NODE_ENV === 'development' && (
+            <>
+              {/* Any API errors */}
+              {Object.keys(apiErrors).length > 0 && (
+                <div className="p-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded relative" role="alert">
+                  <strong className="font-bold">API Warnings:</strong>
+                  <ul className="mt-2 list-disc pl-5">
+                    {Object.entries(apiErrors).map(([key, {error, source}]) => (
+                      <li key={key}><strong>{key}:</strong> {error} ({source})</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+        
         {/* Loading, Error States */}
         {loading && (
           <div className="text-center py-8">
@@ -886,69 +767,9 @@ export default function Home() {
           </div>
         )}
         
-        {error && (
-          <div className="text-center py-8 text-red-500">
-            <p className="text-lg font-semibold">Error</p>
-            <p className="mt-2">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-4 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Retry
-            </button>
-          </div>
-        )}
-        
         {/* Ranking Table */}
         {!loading && !error && (
           <>
-            {/* API Errors Notification */}
-            {Object.keys(apiErrors).length > 0 && (
-              <div className="mb-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700">
-                <p className="font-medium">Some data sources are unavailable</p>
-                <p className="text-sm">
-                  There were issues connecting to some of our data sources. We&apos;re showing the data we could retrieve.
-                </p>
-                <details className="mt-2 text-xs">
-                  <summary className="cursor-pointer font-medium">View data source details</summary>
-                  <ul className="mt-2 list-disc pl-5 space-y-1">
-                    {Object.entries(apiErrors).map(([key, info]) => (
-                      <li key={key}>
-                        <strong>{key.toUpperCase()}:</strong> {info.source}
-                        {info.error && <span className="block ml-4 text-yellow-600">{info.error}</span>}
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              </div>
-            )}
-            
-            {/* Cached CoinGecko Data Notification */}
-            {usingCachedCoinGeckoData && (
-              <div className="mb-4 p-4 bg-blue-50 border-l-4 border-blue-400 text-blue-700">
-                <p className="font-medium">Using cached Bitcoin price data</p>
-                <p className="text-sm">
-                  We couldn&apos;t fetch the latest Bitcoin prices from our data provider. The prices shown may not reflect current market conditions.
-                </p>
-                <p className="text-xs mt-1 text-blue-600">
-                  Last updated: {new Date(bitcoinPriceTimestamp).toLocaleString()}
-                </p>
-              </div>
-            )}
-            
-            {/* Cached IMF Data Notification - Only show when there's an error */}
-            {usingCachedImfData && (
-              <div className="mb-4 p-4 bg-blue-50 border-l-4 border-blue-400 text-blue-700">
-                <p className="font-medium">Using cached GDP data</p>
-                <p className="text-sm">
-                  We couldn&apos;t fetch the latest GDP data from the IMF. The economic data shown may not be the most current.
-                </p>
-                <p className="text-xs mt-1 text-blue-600">
-                  Last updated: {new Date(gdpDataTimestamp).toLocaleString()}
-                </p>
-              </div>
-            )}
-            
             <div 
               ref={tableRef} 
               className="overflow-x-auto bg-white rounded-xl shadow-lg border border-gray-200"
@@ -1029,13 +850,13 @@ export default function Home() {
                   <li>Silver: 1,800,000 metric tons of estimated above-ground supply</li>
                 </ul>
               </li>
-              <li><strong>GDP Data:</strong> IMF World Economic Outlook database (via proxy API)</li>
+              <li><strong>GDP Data:</strong> Static GDP data from IMF World Economic Outlook database</li>
               <li>
                 <strong>Eurozone:</strong> Combined GDP of all 20 Euro-using countries:
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-1 mt-1 text-xs">
                   {EUROZONE_COUNTRIES.map(country => (
-                    <div key={country.isoCode} className="px-1">
-                      {country.name} ({country.isoCode})
+                    <div key={country} className="px-1">
+                      {country}
                     </div>
                   ))}
                 </div>
@@ -1046,7 +867,7 @@ export default function Home() {
         
         {/* Footer */}
         <footer className="mt-8 text-center text-gray-500 text-sm">
-          <p>Data sources: CoinGecko API for Bitcoin and metals pricing, IMF API for GDP data.</p>
+          <p>Data sources: CoinGecko API for Bitcoin and metals pricing, static GDP data from IMF.</p>
           <p className="mt-1">© {new Date().getFullYear()} Satoshi Forex. All rights reserved.</p>
         </footer>
       </div>
