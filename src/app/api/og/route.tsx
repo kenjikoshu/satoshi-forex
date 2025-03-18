@@ -103,6 +103,7 @@ export async function GET(req: NextRequest) {
             justifyContent: 'center',
             backgroundColor: '#f9fafb', // light gray background
             padding: '20px', // Reduced padding to increase box size
+            fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
           }}
         >
           <div
@@ -134,7 +135,7 @@ export async function GET(req: NextRequest) {
               }}
             >
               <span style={{ fontWeight: 700 }}>Satoshi</span>
-              <span style={{ fontWeight: 300 }}> - Bitcoin's Native Currency Unit</span>
+              <span style={{ fontWeight: 300 }}> - Bitcoin&apos;s Native Currency Unit</span>
             </div>
 
             {/* Table */}
@@ -149,6 +150,64 @@ export async function GET(req: NextRequest) {
                 overflow: 'hidden',
               }}
             >
+              {/* Table Header */}
+              <div
+                style={{
+                  display: 'flex',
+                  backgroundColor: '#f8fafc',
+                  borderBottom: '2px solid #e5e7eb',
+                  height: '50px',
+                }}
+              >
+                {/* Currency header */}
+                <div
+                  style={{
+                    flex: 1.8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 16px',
+                    borderRight: '1px solid #e5e7eb',
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    color: '#64748b',
+                  }}
+                >
+                  CURRENCY
+                </div>
+
+                {/* Sats per unit header */}
+                <div
+                  style={{
+                    flex: 1.2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 16px',
+                    borderRight: '1px solid #e5e7eb',
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    color: '#64748b',
+                  }}
+                >
+                  SATS PER UNIT
+                </div>
+
+                {/* 1 Sat value header */}
+                <div
+                  style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0 16px',
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    color: '#64748b',
+                  }}
+                >
+                  1 SAT VALUE
+                </div>
+              </div>
+
+              {/* Table Rows */}
               {currencies.map((currency, index) => (
                 <div
                   key={currency.code}
@@ -207,10 +266,10 @@ export async function GET(req: NextRequest) {
                       display: 'flex',
                       alignItems: 'center',
                       padding: '0 16px',
-                      fontFamily: 'monospace',
                       fontSize: '24px',
                       color: '#1f2937',
                       borderRight: '1px solid #e5e7eb',
+                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
                     }}
                   >
                     {formatSatsPerUnit(currency.satsPerUnit)}
@@ -223,9 +282,9 @@ export async function GET(req: NextRequest) {
                       display: 'flex',
                       alignItems: 'center',
                       padding: '0 16px',
-                      fontFamily: 'monospace',
                       fontSize: '24px',
                       color: '#1f2937',
+                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
                     }}
                   >
                     {formatOneSatValue(currency.oneUnitInDollars)} {currency.code}
@@ -284,9 +343,10 @@ export async function GET(req: NextRequest) {
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: 'white',
+            fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
           }}
         >
-          <p style={{ fontSize: '32px' }}>Satoshi - Bitcoin's Native Currency Unit</p>
+          <p style={{ fontSize: '32px' }}>Satoshi - Bitcoin&apos;s Native Currency Unit</p>
         </div>
       ),
       {
