@@ -676,42 +676,29 @@ export default function Home() {
   
   // Helper function to format currency code display
   function formatCurrencyDisplay(currency: Currency): JSX.Element {
-    let badgeColor = '';
-    
-    switch(currency.type) {
-      case 'crypto':
-        badgeColor = 'bg-orange-100 text-orange-800';
-        break;
-      case 'metal':
-        badgeColor = 'bg-yellow-100 text-yellow-800';
-        break;
-      case 'fiat':
-        badgeColor = 'bg-green-100 text-green-800';
-        break;
-    }
-    
-    // Map currency codes to flag emojis (simplified for example)
-    const getFlagEmoji = (code: string): string => {
-      const flagMap: Record<string, string> = {
-        'USD': '🇺🇸',
-        'EUR': '🇪🇺',
-        'JPY': '🇯🇵',
-        'GBP': '🇬🇧',
-        'CNY': '🇨🇳',
-        'CAD': '🇨🇦',
-        'AUD': '🇦🇺',
-        'BTC': '₿',
-        'XAU': '🥇',
-        'XAG': '🥈'
-      };
+    // Function to get the appropriate icon path for a currency code
+    const getCurrencyIconPath = (code: string): string => {
+      // Create lowercase version of the code for the filename
+      const upperCode = code.toUpperCase();
       
-      return flagMap[code] || '🏳️';
+      // Return the path to the corresponding SVG
+      return `/icons/currencies/${upperCode}.svg`;
     };
     
     return (
       <div className="flex items-center">
-        <div className="mr-3 text-lg" aria-hidden="true">
-          {getFlagEmoji(currency.code)}
+        <div className="mr-4 flex-shrink-0" aria-hidden="true">
+          <img 
+            src={getCurrencyIconPath(currency.code)} 
+            alt={`${currency.code} icon`}
+            width={24}
+            height={24}
+            className="w-6 h-6 object-contain"
+            onError={(e) => {
+              // If image fails to load, show a fallback
+              (e.target as HTMLImageElement).src = '/icons/currencies/default.svg';
+            }}
+          />
         </div>
         <div>
           <div className="font-medium text-gray-900">{currency.name}</div>

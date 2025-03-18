@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(1,0,0,1,0.29891,-0.201349)">
+        <g id="BULINE">
+            <circle cx="256" cy="256" r="256" style="fill:rgb(254,48,48);"/>
+        </g>
+        <path id="BULINE1" serif:id="BULINE" d="M0,256.201L0,256C0,114.809 114.548,0.162 255.701,0L255.701,256.201L0,256.201Z" style="fill:rgb(9,9,182);"/>
+    </g>
+    <g id="Icons">
+        <g transform="matrix(1,0,0,1,24.0483,-32.2494)">
+            <circle cx="442.44" cy="370.72" r="16.28" style="fill:white;fill-opacity:0.2;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,10.737,-38.7606)">
+            <circle cx="466.42" cy="346.74" r="11.53" style="fill:white;fill-opacity:0.2;"/>
+        </g>
+        <g transform="matrix(22.1129,0,0,22.4133,-7.60688,32.6198)">
+            <path d="M7.333,7L6.058,8.413L6.155,6.512L4.254,6.609L5.667,5.333L4.254,4.058L6.154,4.155L6.058,2.254L7.333,3.667L8.61,2.254L8.513,4.154L10.413,4.058L9,5.333L10.413,6.609L8.512,6.512L8.609,8.412L7.333,7Z" style="fill:white;"/>
+        </g>
+        <path d="M0,255.91C0.142,115.499 115.719,0.039 256.13,0.039C266.704,0.039 277.267,0.694 287.76,2C160.281,17.891 63.542,127.453 63.55,255.91L63.55,256C63.559,384.474 160.28,494.046 287.76,510C277.225,511.317 266.617,511.978 256,511.978C115.571,511.978 0.012,396.429 -0,256L0,255.91Z" style="fill:rgb(17,17,17);fill-opacity:0.1;"/>
+    </g>
+</svg>
