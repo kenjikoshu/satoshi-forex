@@ -848,14 +848,14 @@ export default function Home() {
                         Rank
                       </th>
                       <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase font-heading">
-                        Asset
+                        Currency
                       </th>
                       <th 
                         className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading hidden sm:table-cell"
                         onClick={() => handleSort('economicSize')}
                       >
                         <div className="flex items-center">
-                          Market Cap
+                          GDP/Market Cap
                           {renderSortIndicator('economicSize')}
                         </div>
                       </th>
