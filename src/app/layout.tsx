@@ -20,26 +20,26 @@ const montserrat = Montserrat({
 
 // Define metadata for the site including OpenGraph and Twitter cards
 export const metadata: Metadata = {
-  title: 'Satoshis Forex | Compare Bitcoin Satoshi to Global Currencies',
-  description: 'Compare Bitcoin Satoshi to the world\'s top currencies in real time',
+  title: 'Satoshis Forex | Compare Bitcoin Satoshis to Global Currencies',
+  description: 'Compare Bitcoin Satoshis to the world\'s top currencies in real time',
   openGraph: {
-    title: 'Satoshis Forex | Compare Bitcoin Satoshi to Global Currencies',
-    description: 'Compare Bitcoin Satoshi to the world\'s top currencies in real time',
+    title: 'Satoshis Forex | Compare Bitcoin Satoshis to Global Currencies',
+    description: 'Compare Bitcoin Satoshis to the world\'s top currencies in real time',
     type: 'website',
-    url: 'https://satoshi-forex.vercel.app',
+    url: 'https://satoshis.forex',
     siteName: 'Satoshis Forex',
     images: [{
-      url: 'https://satoshi-forex.vercel.app/api/og',
+      url: 'https://satoshis.forex/api/og',
       width: 1200,
       height: 630,
-      alt: 'Satoshi - Bitcoin\'s Native Currency Unit with current exchange rates',
+      alt: 'Satoshis - Bitcoin\'s Native Currency Unit with current exchange rates',
     }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Satoshis Forex | Compare Bitcoin Satoshi to Global Currencies',
-    description: 'Compare Bitcoin Satoshi to the world\'s top currencies in real time',
-    images: ['https://satoshi-forex.vercel.app/api/og'],
+    description: 'Compare Bitcoin Satoshis to the world\'s top currencies in real time',
+    images: ['https://satoshis.forex/api/og'],
   },
 };
 

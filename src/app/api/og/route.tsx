@@ -143,8 +143,8 @@ export async function GET(req: NextRequest) {
                 textAlign: 'center',
               }}
             >
-              <span style={{ fontWeight: 700 }}>Satoshi</span>
-              <span style={{ fontWeight: 300 }}> - Bitcoin&apos;s Native Currency Unit</span>
+              <span style={{ fontWeight: 700 }}>Satoshis&nbsp;</span>
+              <span style={{ fontWeight: 300 }}>- Bitcoin&apos;s Native Currency Unit</span>
             </div>
 
             {/* Table - using Open Sans font */}
