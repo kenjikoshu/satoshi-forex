@@ -8,35 +8,154 @@ export const runtime = 'edge';
 export const fetchCache = 'force-no-store';
 export const revalidate = 0;
 
+// Helper function to retry API calls with exponential backoff
+async function fetchWithRetry(url: string, options: RequestInit = {}, maxRetries = 3): Promise<Response> {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      // Add a timeout using AbortController to prevent long-running requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+      
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+        cache: 'no-store',
+        headers: {
+          ...options.headers,
+          'Accept': 'application/json',
+        }
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        return response;
+      }
+      
+      // If response is not ok but we got a response, throw with status code
+      throw new Error(`API returned status ${response.status}`);
+    } catch (error) {
+      lastError = error as Error;
+      
+      // If we've used all retries, throw the error
+      if (attempt === maxRetries - 1) {
+        throw lastError;
+      }
+      
+      // Wait before retrying (exponential backoff)
+      const waitTime = Math.min(1000 * Math.pow(2, attempt), 3000);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+  }
+  
+  // This should never happen due to the throw in the loop,
+  // but TypeScript needs a return value
+  throw lastError;
+}
+
+// Simple in-memory cache for the OG API
+interface CacheData {
+  satsPerUSD: number;
+  satsPerCNY: number;
+  satsPerEUR: number;
+  satsPerJPY: number;
+  timestamp: number;
+}
+
+let dataCache: CacheData | null = null;
+const CACHE_TTL = 60 * 1000; // 1 minute cache time
+
+// Validate the data to ensure it's reasonable
+function isValidForexData(satsPerUSD: number, satsPerCNY: number, satsPerEUR: number, satsPerJPY: number): boolean {
+  // Ensure values are positive and within reasonable range
+  // Typical ranges for satoshis per unit (as of 2023):
+  // USD: ~1000-3000 sats per USD
+  // CNY: ~150-450 sats per CNY
+  // EUR: ~1200-3500 sats per EUR
+  // JPY: ~7-25 sats per JPY
+  return (
+    satsPerUSD > 500 && satsPerUSD < 5000 &&
+    satsPerCNY > 50 && satsPerCNY < 1000 &&
+    satsPerEUR > 600 && satsPerEUR < 6000 &&
+    satsPerJPY > 3 && satsPerJPY < 50
+  );
+}
+
 // Image generation function
 export async function GET(req: NextRequest) {
   try {
-    // Try to fetch data from CoinGecko
-    let satsPerUSD = 1209;  // fallback values
-    let satsPerCNY = 167.3;
-    let satsPerEUR = 1320;
-    let satsPerJPY = 8.075;
+    // Define fallback values
+    const fallbackValues = {
+      USD: 1209,
+      CNY: 167.3,
+      EUR: 1320,
+      JPY: 8.075
+    };
+    
+    // Initialize with fallback values
+    let satsPerUSD = fallbackValues.USD;
+    let satsPerCNY = fallbackValues.CNY;
+    let satsPerEUR = fallbackValues.EUR;
+    let satsPerJPY = fallbackValues.JPY;
 
-    try {
-      const response = await fetch(
-        'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,cny,eur,jpy',
-        { next: { revalidate: 0 } }
-      );
-      
-      if (response.ok) {
+    // Check if we have valid cached data
+    const now = Date.now();
+    if (dataCache && (now - dataCache.timestamp < CACHE_TTL)) {
+      console.log("Using cached forex data for OG image");
+      satsPerUSD = dataCache.satsPerUSD;
+      satsPerCNY = dataCache.satsPerCNY;
+      satsPerEUR = dataCache.satsPerEUR;
+      satsPerJPY = dataCache.satsPerJPY;
+    } else {
+      console.log("Fetching fresh forex data for OG image");
+      try {
+        // Try with retry mechanism
+        const response = await fetchWithRetry(
+          'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,cny,eur,jpy',
+          { next: { revalidate: 0 } }
+        );
+        
         const data = await response.json();
         
         // Calculate SATS per unit (100,000,000 / BTC price in currency)
         if (data.bitcoin && data.bitcoin.usd) {
-          satsPerUSD = 100000000 / data.bitcoin.usd;
-          satsPerCNY = 100000000 / data.bitcoin.cny;
-          satsPerEUR = 100000000 / data.bitcoin.eur;
-          satsPerJPY = 100000000 / data.bitcoin.jpy;
+          const calculatedSatsPerUSD = 100000000 / data.bitcoin.usd;
+          const calculatedSatsPerCNY = 100000000 / data.bitcoin.cny;
+          const calculatedSatsPerEUR = 100000000 / data.bitcoin.eur;
+          const calculatedSatsPerJPY = 100000000 / data.bitcoin.jpy;
+          
+          // Verify data validity before using it
+          if (isValidForexData(
+            calculatedSatsPerUSD, 
+            calculatedSatsPerCNY, 
+            calculatedSatsPerEUR, 
+            calculatedSatsPerJPY
+          )) {
+            // Use the calculated values
+            satsPerUSD = calculatedSatsPerUSD;
+            satsPerCNY = calculatedSatsPerCNY;
+            satsPerEUR = calculatedSatsPerEUR;
+            satsPerJPY = calculatedSatsPerJPY;
+            
+            // Cache the data
+            dataCache = {
+              satsPerUSD,
+              satsPerCNY,
+              satsPerEUR,
+              satsPerJPY,
+              timestamp: now
+            };
+            console.log("Cached new forex data for OG image");
+          } else {
+            console.error("Received invalid forex data, using fallback values");
+          }
         }
+      } catch (error) {
+        console.error("Error fetching data, using fallback values:", error);
+        // Continue with fallback values
       }
-    } catch (error) {
-      console.error("Error fetching data, using fallback values:", error);
-      // Continue with fallback values
     }
 
     // Format values with appropriate precision
