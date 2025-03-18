@@ -874,7 +874,9 @@ export default function Home() {
                   {getSortedCurrencies().map((currency, index) => (
                     <tr 
                       key={currency.code} 
-                      className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} ${currency.code === "BTC" ? "bg-orange-50" : ""}`}
+                      className={currency.code === "BTC" 
+                        ? "bg-orange-100" 
+                        : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')}
                     >
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                         {currency.rank}
