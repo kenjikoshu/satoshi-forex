@@ -62,13 +62,22 @@ export async function GET(req: NextRequest) {
       }
     };
 
-    // Load the subsetted Montserrat fonts
+    // Load the subsetted Montserrat fonts (for title)
     const montserratBold = await fetch(
       new URL('../../../../public/fonts/subset/Montserrat-Bold.subset.ttf', import.meta.url)
     ).then((res) => res.arrayBuffer());
     
     const montserratLight = await fetch(
       new URL('../../../../public/fonts/subset/Montserrat-Light.subset.ttf', import.meta.url)
+    ).then((res) => res.arrayBuffer());
+
+    // Load the subsetted Open Sans fonts (for everything else)
+    const openSansRegular = await fetch(
+      new URL('../../../../public/fonts/subset/OpenSans-Regular.subset.ttf', import.meta.url)
+    ).then((res) => res.arrayBuffer());
+    
+    const openSansSemiBold = await fetch(
+      new URL('../../../../public/fonts/subset/OpenSans-SemiBold.subset.ttf', import.meta.url)
     ).then((res) => res.arrayBuffer());
 
     // The currencies to display with their full names
@@ -103,7 +112,7 @@ export async function GET(req: NextRequest) {
             justifyContent: 'center',
             backgroundColor: '#f9fafb', // light gray background
             padding: '20px', // Reduced padding to increase box size
-            fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+            fontFamily: 'Open Sans',
           }}
         >
           <div
@@ -120,7 +129,7 @@ export async function GET(req: NextRequest) {
               height: '95%', // Added height to make box larger
             }}
           >
-            {/* Title */}
+            {/* Title - using Montserrat font */}
             <div 
               style={{ 
                 display: 'flex',
@@ -138,7 +147,7 @@ export async function GET(req: NextRequest) {
               <span style={{ fontWeight: 300 }}> - Bitcoin&apos;s Native Currency Unit</span>
             </div>
 
-            {/* Table */}
+            {/* Table - using Open Sans font */}
             <div
               style={{
                 display: 'flex',
@@ -269,7 +278,7 @@ export async function GET(req: NextRequest) {
                       fontSize: '24px',
                       color: '#1f2937',
                       borderRight: '1px solid #e5e7eb',
-                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                      fontFamily: 'Open Sans',
                     }}
                   >
                     {formatOneSatValue(currency.oneUnitInDollars)} {currency.code}
@@ -284,7 +293,7 @@ export async function GET(req: NextRequest) {
                       padding: '0 16px',
                       fontSize: '24px',
                       color: '#1f2937',
-                      fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+                      fontFamily: 'Open Sans',
                     }}
                   >
                     {formatSatsPerUnit(currency.satsPerUnit)}
@@ -313,6 +322,7 @@ export async function GET(req: NextRequest) {
         width: 1200,
         height: 630,
         fonts: [
+          // Montserrat fonts for the title
           {
             name: 'Montserrat',
             data: montserratBold,
@@ -323,6 +333,19 @@ export async function GET(req: NextRequest) {
             name: 'Montserrat',
             data: montserratLight,
             weight: 300,
+            style: 'normal',
+          },
+          // Open Sans fonts for everything else
+          {
+            name: 'Open Sans',
+            data: openSansRegular,
+            weight: 400,
+            style: 'normal',
+          },
+          {
+            name: 'Open Sans',
+            data: openSansSemiBold,
+            weight: 600,
             style: 'normal',
           },
         ],
@@ -343,10 +366,10 @@ export async function GET(req: NextRequest) {
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: 'white',
-            fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+            fontFamily: 'sans-serif',
           }}
         >
-          <p style={{ fontSize: '32px' }}>Satoshis - Bitcoin&apos;s Native Currency Unit</p>
+          <p style={{ fontSize: '32px' }}>Satoshi - Bitcoin&apos;s Native Currency Unit</p>
         </div>
       ),
       {

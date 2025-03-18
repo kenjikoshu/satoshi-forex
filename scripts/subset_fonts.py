@@ -10,12 +10,18 @@ subset_dir = os.path.join('public', 'fonts', 'subset')
 os.makedirs(subset_dir, exist_ok=True)
 
 # Characters needed for the OG image
-text = "SatoshiBitcon'sNaveCurrencyUDCNYEJPfomaedgGkl1234567890.,'-% "
+# Including all Latin alphabet, numbers, special characters for currency names
+# Making sure all digits 0-9 are included
+text = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,'-% ()/$¥€¢£"
 
 # Font files to subset
 fonts = [
+    # Montserrat fonts for the title only
     ('Montserrat-Bold.ttf', 'Montserrat-Bold.subset.ttf'),
-    ('Montserrat-Light.ttf', 'Montserrat-Light.subset.ttf')
+    ('Montserrat-Light.ttf', 'Montserrat-Light.subset.ttf'),
+    # Open Sans fonts for everything else
+    ('OpenSans-Regular.ttf', 'OpenSans-Regular.subset.ttf'),
+    ('OpenSans-SemiBold.ttf', 'OpenSans-SemiBold.subset.ttf')
 ]
 
 for src_filename, dst_filename in fonts:
