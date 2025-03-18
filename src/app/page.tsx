@@ -632,7 +632,7 @@ export default function Home() {
   // New function specifically for formatting the Value of 1 SAT column with standard decimal places
   function formatSatValue(num: number | null): string {
     if (num === null || num === 0) return 'N/A';
-    return num.toFixed(10);
+    return num.toFixed(8);
   }
   
   // New function to format satoshi amounts with at least 4 significant figures
@@ -772,7 +772,7 @@ export default function Home() {
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <header className="mb-10 text-center">
-          <h1 className="text-2xl md:text-4xl lg:text-5xl xl:text-6xl mb-3 font-heading tracking-wide whitespace-nowrap">
+          <h1 className="text-2xl md:text-4xl lg:text-5xl xl:text-6xl mt-3 mb-3 font-heading tracking-wide whitespace-nowrap">
             <span className="font-semibold text-gray-800">Satoshi</span>
             <span className="font-light text-gray-700"> - Bitcoin&apos;s Native Currency Unit</span>
           </h1>
