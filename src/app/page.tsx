@@ -781,12 +781,24 @@ export default function Home() {
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <header className="mb-10 text-center">
-          <h1 className="text-2xl md:text-4xl font-light text-gray-800 mb-3 font-heading tracking-wide">
-            Satoshi - Bitcoin&apos;s Native Currency Unit
+          <h1 className="text-2xl md:text-4xl lg:text-5xl xl:text-6xl mb-3 font-heading tracking-wide whitespace-nowrap">
+            <span className="font-semibold text-gray-800">Satoshi</span>
+            <span className="font-light text-gray-700"> - Bitcoin&apos;s Native Currency Unit</span>
           </h1>
-          <p className="text-sm md:text-base text-gray-800 max-w-2xl mx-auto">
-            Satoshis to Bitcoin, is like Cents to the Dollar, and there are 100,000,000 Satoshis in a Bitcoin. In fact, Bitcoin as a unit does not exist in the Bitcoin code, only Satoshis. Let&apos;s compare Bitcoin Satoshi to the world&apos;s top {TOP_CURRENCIES_LIMIT} currencies in Real Time!
+          <p className="text-md md:text-xl font-bold text-gray-700 mt-6 mb-6">
+            1 Bitcoin = 100,000,000 Satoshis
           </p>
+          <div className="max-w-2xl mx-auto">
+            <p className="text-sm md:text-md text-gray-500 mb-1">
+              Satoshis to Bitcoin, is like Cents to the Dollar
+            </p>
+            <p className="text-sm md:text-md text-gray-500 mb-1">
+              In fact, Bitcoin as a unit does not exist in the Bitcoin code, only Satoshis
+            </p>
+            <p className="text-sm md:text-md text-gray-500">
+              Let&apos;s compare Bitcoin Satoshi to the world&apos;s top {TOP_CURRENCIES_LIMIT} currencies in Real Time!
+            </p>
+          </div>
         </header>
         
         {/* Notifications area */}
@@ -908,15 +920,7 @@ export default function Home() {
         )}
         
         {/* Explanation Section */}
-        <div className="mt-8 p-5 bg-white rounded-lg border border-gray-100">
-          <h2 className="text-xl font-semibold mb-3 text-gray-800 font-heading">About Satoshis</h2>
-          <p className="text-gray-600 mb-3">
-            1 Bitcoin (BTC) = 100,000,000 Satoshis (SATS)
-          </p>
-          <p className="text-gray-600 mb-4">
-            Just as dollars have cents and euros have cents, Bitcoin has Satoshis — the smallest unit of Bitcoin that can be sent. Named after Bitcoin&apos;s creator, Satoshi Nakamoto.
-          </p>
-          
+        <div className="mt-8 p-5 bg-white rounded-lg border border-gray-100">          
           <h3 className="text-lg font-medium text-gray-800 mb-2 font-heading">Why Compare GDP to Market Cap?</h3>
           <p className="text-gray-600 mb-4">
             We rank fiat currencies by GDP and Bitcoin/metals by market cap for a fair size comparison. GDP provides a consistent measure across countries and is within an order of magnitude of money supply values.
