@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import html2canvas from "html2canvas";
+import { useEffect, useState } from "react";
 
 // Types for our data
 interface Currency {
@@ -288,7 +287,6 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [apiErrors, setApiErrors] = useState<Record<string, {error: string, source: string}>>({});
-  const tableRef = useRef<HTMLDivElement>(null);
   
   // Add state for sorting
   const [sortColumn, setSortColumn] = useState<'economicSize' | 'valueOfOneSat' | 'satsPerUnit'>('economicSize');
@@ -565,43 +563,6 @@ export default function Home() {
     loadData();
   }, []);
   
-  // Function to handle sharing the table as an image
-  const handleShare = async () => {
-    if (!tableRef.current) return;
-    
-    try {
-      const canvas = await html2canvas(tableRef.current, {
-        scale: 2, // Higher scale for better quality
-        backgroundColor: '#ffffff',
-        logging: false
-      });
-      
-      // Convert canvas to blob
-      canvas.toBlob((blob) => {
-        if (blob) {
-          // Create a download link
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'satoshi-forex-rankings.png';
-          document.body.appendChild(a);
-          a.click();
-          
-          // Clean up
-          setTimeout(() => {
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-          }, 100);
-        } else {
-          clientError("Failed to create blob");
-        }
-      }, 'image/png');
-    } catch (error) {
-      clientError("Error generating image:", error);
-      alert("Failed to generate sharing image. Please try again later.");
-    }
-  };
-  
   // Helper function to get currency names
   function getCurrencyName(code: string): string {
     const currencyNames: Record<string, string> = {
@@ -716,7 +677,6 @@ export default function Home() {
   // Helper function to format currency code display
   function formatCurrencyDisplay(currency: Currency): JSX.Element {
     let badgeColor = '';
-    let displayText = currency.code;
     
     switch(currency.type) {
       case 'crypto':
@@ -726,16 +686,16 @@ export default function Home() {
         badgeColor = 'bg-yellow-100 text-yellow-800';
         break;
       case 'fiat':
-        badgeColor = 'bg-blue-100 text-blue-800';
+        badgeColor = 'bg-green-200 text-green-900';
         break;
     }
     
     return (
       <div className="flex items-center">
-        <span className="font-mono font-bold">{displayText}</span>
-        <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${badgeColor}`}>
-          {currency.type.toUpperCase()}
+        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${badgeColor}`}>
+          {currency.code}
         </span>
+        <span className="ml-3 text-sm text-gray-500">{currency.name}</span>
       </div>
     );
   }
@@ -801,7 +761,7 @@ export default function Home() {
         {/* Header Section */}
         <header className="mb-8 text-center">
           <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-2">
-            The Satoshi: Bitcoin&apos;s Currency Unit
+            Satoshi: Bitcoin&apos;s Currency Unit
           </h1>
           <p className="text-lg md:text-xl text-gray-600 mb-3">
             1 Bitcoin = 100,000,000 Satoshis
@@ -815,19 +775,6 @@ export default function Home() {
             See how Satoshis compare to Gold, Silver, and the world&apos;s top {TOP_CURRENCIES_LIMIT} currencies!
           </p>
         </header>
-        
-        {/* Share Button */}
-        <div className="mb-6 flex justify-center">
-          <button
-            onClick={handleShare}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full flex items-center shadow-lg transform transition duration-200 hover:scale-105"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
-            </svg>
-            Share This Ranking
-          </button>
-        </div>
         
         {/* Notifications area */}
         <div className="mb-4 space-y-2">
@@ -868,10 +815,7 @@ export default function Home() {
         {/* Ranking Table */}
         {!loading && !error && (
           <>
-            <div 
-              ref={tableRef} 
-              className="overflow-x-auto bg-white rounded-xl shadow-lg border border-gray-200"
-            >
+            <div className="overflow-x-auto bg-white rounded-xl shadow-lg border border-gray-200">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
@@ -922,7 +866,6 @@ export default function Home() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           {formatCurrencyDisplay(currency)}
-                          <span className="ml-3 text-sm text-gray-500">{currency.name}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
