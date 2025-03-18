@@ -175,10 +175,10 @@ export async function GET(req: NextRequest) {
                   CURRENCY
                 </div>
 
-                {/* Sats per unit header */}
+                {/* 1 Sat value header - swapped position */}
                 <div
                   style={{
-                    flex: 1.2,
+                    flex: 1.5,
                     display: 'flex',
                     alignItems: 'center',
                     padding: '0 16px',
@@ -188,10 +188,10 @@ export async function GET(req: NextRequest) {
                     color: '#64748b',
                   }}
                 >
-                  SATS PER UNIT
+                  1 SAT VALUE
                 </div>
 
-                {/* 1 Sat value header */}
+                {/* Sats per unit header - swapped position */}
                 <div
                   style={{
                     flex: 1,
@@ -203,7 +203,7 @@ export async function GET(req: NextRequest) {
                     color: '#64748b',
                   }}
                 >
-                  1 SAT VALUE
+                  SATS PER UNIT
                 </div>
               </div>
 
@@ -259,10 +259,10 @@ export async function GET(req: NextRequest) {
                     </div>
                   </div>
 
-                  {/* Sats per unit column */}
+                  {/* 1 Sat value column - swapped position and made wider */}
                   <div
                     style={{
-                      flex: 1.2,
+                      flex: 1.5,
                       display: 'flex',
                       alignItems: 'center',
                       padding: '0 16px',
@@ -272,10 +272,10 @@ export async function GET(req: NextRequest) {
                       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
                     }}
                   >
-                    {formatSatsPerUnit(currency.satsPerUnit)}
+                    {formatOneSatValue(currency.oneUnitInDollars)} {currency.code}
                   </div>
 
-                  {/* 1 Sat value column */}
+                  {/* Sats per unit column - swapped position */}
                   <div
                     style={{
                       flex: 1,
@@ -287,7 +287,7 @@ export async function GET(req: NextRequest) {
                       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
                     }}
                   >
-                    {formatOneSatValue(currency.oneUnitInDollars)} {currency.code}
+                    {formatSatsPerUnit(currency.satsPerUnit)}
                   </div>
                 </div>
               ))}
@@ -346,7 +346,7 @@ export async function GET(req: NextRequest) {
             fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
           }}
         >
-          <p style={{ fontSize: '32px' }}>Satoshi - Bitcoin&apos;s Native Currency Unit</p>
+          <p style={{ fontSize: '32px' }}>Satoshis - Bitcoin&apos;s Native Currency Unit</p>
         </div>
       ),
       {
