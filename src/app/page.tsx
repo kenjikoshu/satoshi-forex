@@ -687,26 +687,27 @@ export default function Home() {
     };
     
     return (
-      <div className="flex items-center">
-        <div className="mr-5 flex-shrink-0" aria-hidden="true">
+      <div className="flex items-center space-x-3">
+        <div className="flex-shrink-0" aria-hidden="true">
           <Image 
             src={getCurrencyIconPath(currency.code)} 
             alt={`${currency.code} icon`}
-            width={30}
-            height={30}
+            width={26}
+            height={26}
             quality={100}
             unoptimized={true} // For SVG files, unoptimized provides better rendering
             style={{ 
-              width: '30px', 
-              height: '30px',
+              width: '24px', 
+              height: '24px',
+              maxWidth: '100%',
               shapeRendering: 'geometricPrecision',
               textRendering: 'optimizeLegibility'
             }}
           />
         </div>
         <div>
-          <div className="font-medium text-gray-900 sm:block hidden">{currency.name}</div>
-          <div className="text-sm font-medium text-gray-900">{currency.code}</div>
+          <div className="font-medium text-gray-900 hidden md:block">{currency.name}</div>
+          <div className="text-xs font-medium text-gray-900 md:text-gray-500 md:font-normal">{currency.code}</div>
         </div>
       </div>
     );
@@ -772,21 +773,21 @@ export default function Home() {
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <header className="mb-10 text-center">
-          <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl xl:text-6xl mt-3 mb-3 font-heading tracking-wide sm:whitespace-nowrap">
+          <h1 className="text-2xl md:text-4xl lg:text-5xl xl:text-6xl mt-3 mb-3 font-heading tracking-wide">
             <span className="font-semibold text-gray-800">Satoshi</span>
             <span className="font-light text-gray-700"> - Bitcoin&apos;s Native Currency Unit</span>
           </h1>
-          <p className="text-sm sm:text-md md:text-xl font-bold text-gray-700 mt-6 mb-6">
+          <p className="text-md md:text-xl font-bold text-gray-700 mt-6 mb-6">
             1 Bitcoin = 100,000,000 Satoshis
           </p>
           <div className="max-w-2xl mx-auto">
-            <p className="text-xs sm:text-sm md:text-md text-gray-500 mb-1">
+            <p className="text-sm md:text-md text-gray-500 mb-1">
               Satoshis to Bitcoin, is like Cents to the Dollar
             </p>
-            <p className="text-xs sm:text-sm md:text-md text-gray-500 mb-1">
+            <p className="text-sm md:text-md text-gray-500 mb-1 hidden sm:block">
               In fact, Bitcoin as a unit does not exist in the Bitcoin code, only Satoshis
             </p>
-            <p className="text-xs sm:text-sm md:text-md text-gray-500">
+            <p className="text-sm md:text-md text-gray-500">
               Let&apos;s compare Bitcoin Satoshi to the world&apos;s top {TOP_CURRENCIES_LIMIT} currencies in Real Time!
             </p>
           </div>
@@ -831,83 +832,92 @@ export default function Home() {
         {/* Ranking Table */}
         {!loading && !error && (
           <>
-            <div className="overflow-x-auto bg-white rounded-lg border border-gray-100">
-              <table className="min-w-full">
-                <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase font-heading sm:table-cell hidden">
-                      Rank
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase font-heading">
-                      Asset/Currency
-                    </th>
-                    <th 
-                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading md:table-cell hidden"
-                      onClick={() => handleSort('economicSize')}
-                    >
-                      <div className="flex items-center">
-                        GDP/Market Cap
-                        {renderSortIndicator('economicSize')}
-                      </div>
-                    </th>
-                    <th 
-                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading sm:table-cell hidden max-[480px]:hidden"
-                      onClick={() => handleSort('valueOfOneSat')}
-                    >
-                      <div className="flex items-center">
-                        Value of 1 SAT
-                        {renderSortIndicator('valueOfOneSat')}
-                      </div>
-                    </th>
-                    <th 
-                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading"
-                      onClick={() => handleSort('satsPerUnit')}
-                    >
-                      <div className="flex items-center">
-                        SATS per Unit
-                        {renderSortIndicator('satsPerUnit')}
-                      </div>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {getSortedCurrencies().map((currency, index) => (
-                    <tr 
-                      key={currency.code} 
-                      className={currency.code === "BTC" 
-                        ? "bg-orange-100" 
-                        : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')}
-                    >
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 sm:table-cell hidden">
-                        {currency.rank}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
+            <div className="overflow-x-auto bg-white rounded-lg border border-gray-100 w-full">
+              <div className="min-w-[420px]">
+                <table className="w-full table-fixed">
+                  <colgroup>
+                    <col className="w-[60px] md:table-column hidden" />  {/* Rank - hidden on mobile */}
+                    <col className="w-[100px] md:w-[180px]" />  {/* Asset/Currency - narrower on mobile */}
+                    <col className="w-[140px] hidden sm:table-column" />  {/* GDP/Market Cap - hidden on mobile */}
+                    <col className="w-[150px]" />  {/* Value of 1 SAT */}
+                    <col className="w-[150px]" />  {/* SATS per Unit */}
+                  </colgroup>
+                  <thead>
+                    <tr className="border-b border-gray-100">
+                      <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase font-heading hidden md:table-cell">
+                        Rank
+                      </th>
+                      <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase font-heading">
+                        Asset
+                      </th>
+                      <th 
+                        className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading hidden sm:table-cell"
+                        onClick={() => handleSort('economicSize')}
+                      >
                         <div className="flex items-center">
-                          {formatCurrencyDisplay(currency)}
+                          Market Cap
+                          {renderSortIndicator('economicSize')}
                         </div>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 md:table-cell hidden">
-                        ${formatNumber(currency.economicSize)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-mono sm:table-cell hidden max-[480px]:hidden">
-                        {currency.type === 'metal' 
-                          ? `${formatSatValue(currency.valueOfOneSat)} oz (troy)`
-                          : (currency.type === 'fiat' 
-                            ? `${formatSatValue(currency.valueOfOneSat)} ${currency.code}`
-                            : `1 SAT`)}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-mono">
-                        {currency.type === 'metal'
-                          ? `${formatSatsPerUnit(currency.satsPerUnit)} (per oz)`
-                          : (currency.code === 'BTC'
-                            ? `${formatSatsPerUnit(currency.satsPerUnit)} (per BTC)`
-                            : `${formatSatsPerUnit(currency.satsPerUnit)}`)
-                        }
-                      </td>
+                      </th>
+                      <th 
+                        className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading"
+                        onClick={() => handleSort('valueOfOneSat')}
+                      >
+                        <div className="flex items-center whitespace-nowrap">
+                          1 SAT Value
+                          {renderSortIndicator('valueOfOneSat')}
+                        </div>
+                      </th>
+                      <th 
+                        className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading"
+                        onClick={() => handleSort('satsPerUnit')}
+                      >
+                        <div className="flex items-center whitespace-nowrap">
+                          SATS per Unit
+                          {renderSortIndicator('satsPerUnit')}
+                        </div>
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {getSortedCurrencies().map((currency, index) => (
+                      <tr 
+                        key={currency.code} 
+                        className={currency.code === "BTC" 
+                          ? "bg-orange-100" 
+                          : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')}
+                      >
+                        <td className="px-2 md:px-4 py-2 md:py-3 whitespace-nowrap text-sm text-gray-900 hidden md:table-cell">
+                          {currency.rank}
+                        </td>
+                        <td className="px-2 md:px-4 py-2 md:py-3 whitespace-nowrap">
+                          <div className="flex items-center">
+                            {formatCurrencyDisplay(currency)}
+                          </div>
+                        </td>
+                        <td className="px-2 md:px-4 py-2 md:py-3 whitespace-nowrap text-sm text-gray-900 hidden sm:table-cell">
+                          ${formatNumber(currency.economicSize)}
+                        </td>
+                        <td className="px-2 md:px-4 py-2 md:py-3 whitespace-nowrap text-sm text-gray-900 font-mono">
+                          {currency.type === 'metal' 
+                            ? `${formatSatValue(currency.valueOfOneSat)} oz`
+                            : (currency.type === 'fiat' 
+                              ? `${formatSatValue(currency.valueOfOneSat)} ${currency.code}`
+                              : `1 SAT`)}
+                        </td>
+                        <td className="px-2 md:px-4 py-2 md:py-3 whitespace-nowrap text-sm text-gray-900 font-mono">
+                          {currency.type === 'metal'
+                            ? `${formatSatsPerUnit(currency.satsPerUnit)} (per oz)`
+                            : (currency.code === 'BTC'
+                              ? `${formatSatsPerUnit(currency.satsPerUnit)} (per BTC)`
+                              : `${formatSatsPerUnit(currency.satsPerUnit)}`)
+                          }
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </>
         )}
