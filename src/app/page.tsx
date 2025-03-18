@@ -686,16 +686,37 @@ export default function Home() {
         badgeColor = 'bg-yellow-100 text-yellow-800';
         break;
       case 'fiat':
-        badgeColor = 'bg-green-200 text-green-900';
+        badgeColor = 'bg-green-100 text-green-800';
         break;
     }
     
+    // Map currency codes to flag emojis (simplified for example)
+    const getFlagEmoji = (code: string): string => {
+      const flagMap: Record<string, string> = {
+        'USD': '🇺🇸',
+        'EUR': '🇪🇺',
+        'JPY': '🇯🇵',
+        'GBP': '🇬🇧',
+        'CNY': '🇨🇳',
+        'CAD': '🇨🇦',
+        'AUD': '🇦🇺',
+        'BTC': '₿',
+        'XAU': '🥇',
+        'XAG': '🥈'
+      };
+      
+      return flagMap[code] || '🏳️';
+    };
+    
     return (
       <div className="flex items-center">
-        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${badgeColor}`}>
-          {currency.code}
-        </span>
-        <span className="ml-3 text-sm text-gray-500">{currency.name}</span>
+        <div className="mr-3 text-lg" aria-hidden="true">
+          {getFlagEmoji(currency.code)}
+        </div>
+        <div>
+          <div className="font-medium text-gray-900">{currency.name}</div>
+          <div className="text-xs text-gray-500">{currency.code}</div>
+        </div>
       </div>
     );
   }
@@ -756,23 +777,15 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen p-4 md:p-8 bg-gray-50">
+    <main className="min-h-screen p-4 md:p-8 bg-gray-50 font-sans">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
-        <header className="mb-8 text-center">
-          <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-2">
-            Satoshi: Bitcoin&apos;s Currency Unit
+        <header className="mb-10 text-center">
+          <h1 className="text-2xl md:text-4xl font-light text-gray-800 mb-3 font-heading tracking-wide">
+            Satoshi - Bitcoin&apos;s Native Currency Unit
           </h1>
-          <p className="text-lg md:text-xl text-gray-600 mb-3">
-            1 Bitcoin = 100,000,000 Satoshis
-          </p>
-          <div className="max-w-2xl mx-auto">
-            <p className="text-md md:text-lg text-gray-600">
-              Just as dollars and euros have cents, Bitcoin has Satoshis, the actual unit of Bitcoin in the Bitcoin code
-            </p>
-          </div>
-          <p className="text-md md:text-lg text-gray-500 mt-4">
-            See how Satoshis compare to Gold, Silver, and the world&apos;s top {TOP_CURRENCIES_LIMIT} currencies!
+          <p className="text-sm md:text-base text-gray-800 max-w-2xl mx-auto">
+            Satoshis to Bitcoin, is like Cents to the Dollar, and there are 100,000,000 Satoshis in a Bitcoin. In fact, Bitcoin as a unit does not exist in the Bitcoin code, only Satoshis. Let&apos;s compare Bitcoin Satoshi to the world&apos;s top {TOP_CURRENCIES_LIMIT} currencies in Real Time!
           </p>
         </header>
         
@@ -815,27 +828,27 @@ export default function Home() {
         {/* Ranking Table */}
         {!loading && !error && (
           <>
-            <div className="overflow-x-auto bg-white rounded-xl shadow-lg border border-gray-200">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <div className="overflow-x-auto bg-white rounded-lg border border-gray-100">
+              <table className="min-w-full">
+                <thead>
+                  <tr className="border-b border-gray-100">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase font-heading">
                       Rank
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase font-heading">
                       Asset/Currency
                     </th>
                     <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading"
                       onClick={() => handleSort('economicSize')}
                     >
                       <div className="flex items-center">
-                        GDP/Market Cap (USD)
+                        GDP/Market Cap
                         {renderSortIndicator('economicSize')}
                       </div>
                     </th>
                     <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading"
                       onClick={() => handleSort('valueOfOneSat')}
                     >
                       <div className="flex items-center">
@@ -844,7 +857,7 @@ export default function Home() {
                       </div>
                     </th>
                     <th 
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading"
                       onClick={() => handleSort('satsPerUnit')}
                     >
                       <div className="flex items-center">
@@ -854,31 +867,31 @@ export default function Home() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {getSortedCurrencies().map((currency) => (
+                <tbody>
+                  {getSortedCurrencies().map((currency, index) => (
                     <tr 
                       key={currency.code} 
-                      className={currency.code === "BTC" ? "bg-orange-50" : "hover:bg-gray-50"}
+                      className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} ${currency.code === "BTC" ? "bg-orange-50" : ""}`}
                     >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                         {currency.rank}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap">
                         <div className="flex items-center">
                           {formatCurrencyDisplay(currency)}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                         ${formatNumber(currency.economicSize)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-mono">
                         {currency.type === 'metal' 
                           ? `${formatSatValue(currency.valueOfOneSat)} oz (troy)`
                           : (currency.type === 'fiat' 
                             ? `${formatSatValue(currency.valueOfOneSat)} ${currency.code}`
                             : `1 SAT`)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-mono">
                         {currency.type === 'metal'
                           ? `${formatSatsPerUnit(currency.satsPerUnit)} (per oz)`
                           : (currency.code === 'BTC'
@@ -895,45 +908,44 @@ export default function Home() {
         )}
         
         {/* Explanation Section */}
-        <div className="mt-8 p-6 bg-white rounded-xl shadow border border-gray-200">
-          <h2 className="text-xl font-semibold mb-4">About the Rankings</h2>
-          <p className="text-gray-700 mb-4">
-            Why GDP and Market Cap? We rank fiat by GDP and Bitcoin, Gold, and Silver by market cap for a fair comparison. 
-            GDP is used because it&apos;s within an order of magnitude of money supply, while reliable and consistent money supply data is difficult to obtain across all countries.
-            The table shows Bitcoin, Gold, Silver, and the top {TOP_CURRENCIES_LIMIT} currencies by GDP.
-            GDP data is sourced from the IMF&apos;s World Economic Outlook database ({gdpYear}).
+        <div className="mt-8 p-5 bg-white rounded-lg border border-gray-100">
+          <h2 className="text-xl font-semibold mb-3 text-gray-800 font-heading">About Satoshis</h2>
+          <p className="text-gray-600 mb-3">
+            1 Bitcoin (BTC) = 100,000,000 Satoshis (SATS)
+          </p>
+          <p className="text-gray-600 mb-4">
+            Just as dollars have cents and euros have cents, Bitcoin has Satoshis — the smallest unit of Bitcoin that can be sent. Named after Bitcoin&apos;s creator, Satoshi Nakamoto.
           </p>
           
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h3 className="text-lg font-medium text-blue-900 mb-2">Data Sources</h3>
-            <ul className="text-sm text-blue-800 list-disc pl-5 space-y-1">
-              <li><strong>Bitcoin:</strong> Real-time price and market cap from CoinGecko API</li>
-              <li>
-                <strong>Gold & Silver:</strong> Prices derived from Bitcoin-to-Gold and Bitcoin-to-Silver ratios via CoinGecko API, with market caps calculated using:
-                <ul className="list-circle pl-5 mt-1 space-y-1">
-                  <li>Gold: 215,000 metric tons of estimated above-ground supply (all prices in troy ounces)</li>
-                  <li>Silver: 1,800,000 metric tons of estimated above-ground supply (all prices in troy ounces)</li>
-                </ul>
-              </li>
-              <li><strong>GDP Data:</strong> Static GDP data from IMF World Economic Outlook database ({gdpYear})</li>
-              <li>
-                <strong>Eurozone:</strong> Combined GDP of all 20 Euro-using countries:
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-1 mt-1 text-xs">
-                  {EUROZONE_COUNTRIES.map(country => (
-                    <div key={country} className="px-1">
-                      {country}
-                    </div>
-                  ))}
-                </div>
-              </li>
-            </ul>
+          <h3 className="text-lg font-medium text-gray-800 mb-2 font-heading">Why Compare GDP to Market Cap?</h3>
+          <p className="text-gray-600 mb-4">
+            We rank fiat currencies by GDP and Bitcoin/metals by market cap for a fair size comparison. GDP provides a consistent measure across countries and is within an order of magnitude of money supply values.
+          </p>
+          
+          <h3 className="text-lg font-medium text-gray-800 mb-2 font-heading">Data Sources</h3>
+          <ul className="text-sm text-gray-600 list-disc pl-5 space-y-1 mb-4">
+            <li><strong>Bitcoin:</strong> Real-time price from CoinGecko API with an estimated circulating supply of 19.5M BTC</li>
+            <li><strong>Gold:</strong> Price via CoinGecko with market cap based on 215,000 metric tons of estimated above-ground supply</li>
+            <li><strong>Silver:</strong> Price via CoinGecko with market cap based on 1,800,000 metric tons of estimated above-ground supply</li>
+            <li><strong>GDP Data:</strong> IMF World Economic Outlook database ({gdpYear})</li>
+          </ul>
+          
+          <h3 className="text-lg font-medium text-gray-800 mb-2 font-heading">Eurozone</h3>
+          <p className="text-gray-600 mb-2">
+            The Euro (EUR) represents the combined GDP of all 20 Euro-using countries.
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-1 text-xs text-gray-500">
+            {EUROZONE_COUNTRIES.map(country => (
+              <div key={country} className="px-1">
+                {country}
+              </div>
+            ))}
           </div>
         </div>
         
         {/* Footer */}
-        <footer className="mt-8 text-center text-gray-500 text-sm">
-          <p>Data sources: CoinGecko API for Bitcoin and metals pricing, static GDP data from IMF.</p>
-          <p className="mt-1">© {new Date().getFullYear()} Satoshis Forex. All rights reserved.</p>
+        <footer className="mt-8 text-center text-gray-400 text-sm p-4">
+          <p>© {new Date().getFullYear()} Satoshi Forex | Data: CoinGecko, IMF</p>
         </footer>
       </div>
     </main>
