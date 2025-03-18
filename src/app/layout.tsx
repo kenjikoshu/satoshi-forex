@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Open_Sans, Montserrat } from 'next/font/google';
 import type { Metadata } from 'next';
+import { Analytics } from '@vercel/analytics/react';
 
 // Initialize the Open Sans font with specific subsets and weights
 const openSans = Open_Sans({
@@ -50,7 +51,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${openSans.variable} ${montserrat.variable}`}>
-      <body className="font-sans">{children}</body>
+      <body className="font-sans">
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
