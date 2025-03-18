@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from 'next/image';
 
 // Types for our data
 interface Currency {
@@ -678,7 +679,7 @@ export default function Home() {
   function formatCurrencyDisplay(currency: Currency): JSX.Element {
     // Function to get the appropriate icon path for a currency code
     const getCurrencyIconPath = (code: string): string => {
-      // Create lowercase version of the code for the filename
+      // Use uppercase for the filename since the files are in uppercase
       const upperCode = code.toUpperCase();
       
       // Return the path to the corresponding SVG
@@ -687,16 +688,19 @@ export default function Home() {
     
     return (
       <div className="flex items-center">
-        <div className="mr-4 flex-shrink-0" aria-hidden="true">
-          <img 
+        <div className="mr-5 flex-shrink-0" aria-hidden="true">
+          <Image 
             src={getCurrencyIconPath(currency.code)} 
             alt={`${currency.code} icon`}
-            width={24}
-            height={24}
-            className="w-6 h-6 object-contain"
-            onError={(e) => {
-              // If image fails to load, show a fallback
-              (e.target as HTMLImageElement).src = '/icons/currencies/default.svg';
+            width={30}
+            height={30}
+            quality={100}
+            unoptimized={true} // For SVG files, unoptimized provides better rendering
+            style={{ 
+              width: '30px', 
+              height: '30px',
+              shapeRendering: 'geometricPrecision',
+              textRendering: 'optimizeLegibility'
             }}
           />
         </div>
