@@ -62,13 +62,13 @@ export async function GET(req: NextRequest) {
       }
     };
 
-    // Load the Montserrat font
+    // Load the subsetted Montserrat fonts
     const montserratBold = await fetch(
-      new URL('../../../../public/fonts/Montserrat-Bold.ttf', import.meta.url)
+      new URL('../../../../public/fonts/subset/Montserrat-Bold.subset.ttf', import.meta.url)
     ).then((res) => res.arrayBuffer());
     
     const montserratLight = await fetch(
-      new URL('../../../../public/fonts/Montserrat-Light.ttf', import.meta.url)
+      new URL('../../../../public/fonts/subset/Montserrat-Light.subset.ttf', import.meta.url)
     ).then((res) => res.arrayBuffer());
 
     // The currencies to display
