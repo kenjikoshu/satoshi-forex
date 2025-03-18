@@ -705,8 +705,8 @@ export default function Home() {
           />
         </div>
         <div>
-          <div className="font-medium text-gray-900">{currency.name}</div>
-          <div className="text-xs text-gray-500">{currency.code}</div>
+          <div className="font-medium text-gray-900 sm:block hidden">{currency.name}</div>
+          <div className="text-sm font-medium text-gray-900">{currency.code}</div>
         </div>
       </div>
     );
@@ -772,21 +772,21 @@ export default function Home() {
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <header className="mb-10 text-center">
-          <h1 className="text-2xl md:text-4xl lg:text-5xl xl:text-6xl mt-3 mb-3 font-heading tracking-wide whitespace-nowrap">
+          <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl xl:text-6xl mt-3 mb-3 font-heading tracking-wide sm:whitespace-nowrap">
             <span className="font-semibold text-gray-800">Satoshi</span>
             <span className="font-light text-gray-700"> - Bitcoin&apos;s Native Currency Unit</span>
           </h1>
-          <p className="text-md md:text-xl font-bold text-gray-700 mt-6 mb-6">
+          <p className="text-sm sm:text-md md:text-xl font-bold text-gray-700 mt-6 mb-6">
             1 Bitcoin = 100,000,000 Satoshis
           </p>
           <div className="max-w-2xl mx-auto">
-            <p className="text-sm md:text-md text-gray-500 mb-1">
+            <p className="text-xs sm:text-sm md:text-md text-gray-500 mb-1">
               Satoshis to Bitcoin, is like Cents to the Dollar
             </p>
-            <p className="text-sm md:text-md text-gray-500 mb-1">
+            <p className="text-xs sm:text-sm md:text-md text-gray-500 mb-1">
               In fact, Bitcoin as a unit does not exist in the Bitcoin code, only Satoshis
             </p>
-            <p className="text-sm md:text-md text-gray-500">
+            <p className="text-xs sm:text-sm md:text-md text-gray-500">
               Let&apos;s compare Bitcoin Satoshi to the world&apos;s top {TOP_CURRENCIES_LIMIT} currencies in Real Time!
             </p>
           </div>
@@ -835,14 +835,14 @@ export default function Home() {
               <table className="min-w-full">
                 <thead>
                   <tr className="border-b border-gray-100">
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase font-heading">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase font-heading sm:table-cell hidden">
                       Rank
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase font-heading">
                       Asset/Currency
                     </th>
                     <th 
-                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading md:table-cell hidden"
                       onClick={() => handleSort('economicSize')}
                     >
                       <div className="flex items-center">
@@ -851,7 +851,7 @@ export default function Home() {
                       </div>
                     </th>
                     <th 
-                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading sm:table-cell hidden max-[480px]:hidden"
                       onClick={() => handleSort('valueOfOneSat')}
                     >
                       <div className="flex items-center">
@@ -878,7 +878,7 @@ export default function Home() {
                         ? "bg-orange-100" 
                         : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')}
                     >
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 sm:table-cell hidden">
                         {currency.rank}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
@@ -886,10 +886,10 @@ export default function Home() {
                           {formatCurrencyDisplay(currency)}
                         </div>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 md:table-cell hidden">
                         ${formatNumber(currency.economicSize)}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-mono">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-mono sm:table-cell hidden max-[480px]:hidden">
                         {currency.type === 'metal' 
                           ? `${formatSatValue(currency.valueOfOneSat)} oz (troy)`
                           : (currency.type === 'fiat' 
