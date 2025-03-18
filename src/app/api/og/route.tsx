@@ -71,13 +71,24 @@ export async function GET(req: NextRequest) {
       new URL('../../../../public/fonts/subset/Montserrat-Light.subset.ttf', import.meta.url)
     ).then((res) => res.arrayBuffer());
 
-    // The currencies to display
+    // The currencies to display with their full names
     const currencies = [
-      { code: 'USD', satsPerUnit: satsPerUSD },
-      { code: 'CNY', satsPerUnit: satsPerCNY },
-      { code: 'EUR', satsPerUnit: satsPerEUR },
-      { code: 'JPY', satsPerUnit: satsPerJPY },
+      { code: 'USD', name: 'US Dollar', satsPerUnit: satsPerUSD, oneUnitInDollars: 1 / satsPerUSD },
+      { code: 'CNY', name: 'Chinese Yuan', satsPerUnit: satsPerCNY, oneUnitInDollars: 1 / satsPerCNY },
+      { code: 'EUR', name: 'Euro', satsPerUnit: satsPerEUR, oneUnitInDollars: 1 / satsPerEUR },
+      { code: 'JPY', name: 'Japanese Yen', satsPerUnit: satsPerJPY, oneUnitInDollars: 1 / satsPerJPY },
     ];
+
+    // Function to format the "1 Sat =" value
+    const formatOneSatValue = (value: number): string => {
+      if (value < 0.001) {
+        return value.toFixed(8);
+      } else if (value < 0.01) {
+        return value.toFixed(6);
+      } else {
+        return value.toFixed(4);
+      }
+    };
 
     // Generate the image response
     return new ImageResponse(
@@ -91,7 +102,7 @@ export async function GET(req: NextRequest) {
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: '#f9fafb', // light gray background
-            padding: '40px',
+            padding: '20px', // Reduced padding to increase box size
           }}
         >
           <div
@@ -102,10 +113,10 @@ export async function GET(req: NextRequest) {
               justifyContent: 'flex-start',
               backgroundColor: 'white',
               borderRadius: '16px',
-              padding: '40px',
+              padding: '32px',
               boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-              width: '90%',
-              maxWidth: '1000px',
+              width: '95%', // Increased width to make box larger
+              height: '95%', // Added height to make box larger
             }}
           >
             {/* Title */}
@@ -114,16 +125,16 @@ export async function GET(req: NextRequest) {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginBottom: '32px',
+                marginBottom: '24px',
                 fontFamily: 'Montserrat',
-                fontSize: '48px',
+                fontSize: '52px',
                 lineHeight: 1.2,
                 color: '#1f2937',
                 textAlign: 'center',
               }}
             >
               <span style={{ fontWeight: 700 }}>Satoshi</span>
-              <span style={{ fontWeight: 300 }}> - Bitcoin&apos;s Native Currency Unit</span>
+              <span style={{ fontWeight: 300 }}> - Bitcoin's Native Currency Unit</span>
             </div>
 
             {/* Table */}
@@ -132,7 +143,7 @@ export async function GET(req: NextRequest) {
                 display: 'flex',
                 flexDirection: 'column',
                 width: '100%',
-                maxWidth: '600px',
+                maxWidth: '850px',
                 border: '1px solid #e5e7eb',
                 borderRadius: '8px',
                 overflow: 'hidden',
@@ -145,13 +156,13 @@ export async function GET(req: NextRequest) {
                     display: 'flex',
                     backgroundColor: index % 2 === 0 ? 'white' : '#f3f4f6',
                     borderBottom: index < currencies.length - 1 ? '1px solid #e5e7eb' : 'none',
-                    height: '72px',
+                    height: '80px',
                   }}
                 >
                   {/* Currency column */}
                   <div
                     style={{
-                      flex: 1,
+                      flex: 1.8,
                       display: 'flex',
                       alignItems: 'center',
                       padding: '0 16px',
@@ -160,30 +171,52 @@ export async function GET(req: NextRequest) {
                   >
                     <div
                       style={{
-                        width: '36px',
-                        height: '36px',
+                        width: '40px',
+                        height: '40px',
                         marginRight: '16px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         backgroundColor: '#f3f4f6',
                         borderRadius: '50%',
+                        flexShrink: 0,
                       }}
                     >
                       <img
                         src={`https://satoshi-forex.vercel.app/icons/currencies/${currency.code}.svg`}
-                        width={24}
-                        height={24}
+                        width={28}
+                        height={28}
                         alt={currency.code}
                         style={{ objectFit: 'contain' }}
                       />
                     </div>
-                    <span style={{ fontSize: '24px', fontWeight: 500, color: '#1f2937' }}>
-                      {currency.code}
-                    </span>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontSize: '24px', fontWeight: 500, color: '#1f2937' }}>
+                        {currency.code}
+                      </span>
+                      <span style={{ fontSize: '18px', color: '#6b7280' }}>
+                        {currency.name}
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Value column */}
+                  {/* Sats per unit column */}
+                  <div
+                    style={{
+                      flex: 1.2,
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '0 16px',
+                      fontFamily: 'monospace',
+                      fontSize: '24px',
+                      color: '#1f2937',
+                      borderRight: '1px solid #e5e7eb',
+                    }}
+                  >
+                    {formatSatsPerUnit(currency.satsPerUnit)}
+                  </div>
+
+                  {/* 1 Sat value column */}
                   <div
                     style={{
                       flex: 1,
@@ -195,7 +228,7 @@ export async function GET(req: NextRequest) {
                       color: '#1f2937',
                     }}
                   >
-                    {formatSatsPerUnit(currency.satsPerUnit)}
+                    {formatOneSatValue(currency.oneUnitInDollars)} {currency.code}
                   </div>
                 </div>
               ))}
@@ -253,7 +286,7 @@ export async function GET(req: NextRequest) {
             backgroundColor: 'white',
           }}
         >
-          <p style={{ fontSize: '32px' }}>Satoshi - Bitcoin&apos;s Native Currency Unit</p>
+          <p style={{ fontSize: '32px' }}>Satoshi - Bitcoin's Native Currency Unit</p>
         </div>
       ),
       {
