@@ -703,12 +703,12 @@ export default function Home() {
               shapeRendering: 'geometricPrecision',
               textRendering: 'optimizeLegibility'
             }}
-            className="md:w-6 md:h-6 w-7 h-7"
+            className="md:w-6 md:h-6 w-7 h-7 dark:bg-gray-200 dark:rounded-full dark:p-0.5"
           />
         </div>
         <div>
-          <div className="font-medium text-gray-900 hidden md:block">{currency.name}</div>
-          <div className="text-sm md:text-xs font-medium text-gray-900 md:text-gray-500 md:font-normal">{currency.code}</div>
+          <div className="font-medium text-gray-900 dark:text-gray-200 hidden md:block">{currency.name}</div>
+          <div className="text-sm md:text-xs font-medium text-gray-900 dark:text-gray-200 md:text-gray-500 md:dark:text-gray-400 md:font-normal">{currency.code}</div>
         </div>
       </div>
     );
@@ -750,7 +750,7 @@ export default function Home() {
   const renderSortIndicator = (column: 'economicSize' | 'valueOfOneSat' | 'satsPerUnit') => {
     if (sortColumn !== column) {
       return (
-        <svg xmlns="http://www.w3.org/2000/svg" className="ml-1 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="ml-1 h-4 w-4 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
         </svg>
       );
@@ -758,37 +758,37 @@ export default function Home() {
     
     return sortDirection === 'asc' 
       ? (
-        <svg xmlns="http://www.w3.org/2000/svg" className="ml-1 h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="ml-1 h-4 w-4 text-gray-700 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
         </svg>
       )
       : (
-        <svg xmlns="http://www.w3.org/2000/svg" className="ml-1 h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="ml-1 h-4 w-4 text-gray-700 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       );
   };
 
   return (
-    <main className="min-h-screen p-4 md:p-8 bg-gray-50 font-sans">
+    <main className="min-h-screen p-4 md:p-8 bg-gray-50 dark:bg-gray-900 font-sans">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <header className="mb-10 text-center">
           <h1 className="text-2xl md:text-4xl lg:text-5xl xl:text-6xl mt-3 mb-3 font-heading tracking-wide">
-            <span className="font-semibold text-gray-800">Satoshis</span>
-            <span className="font-light text-gray-700"> - Bitcoin&apos;s Native Currency Unit</span>
+            <span className="font-semibold text-gray-800 dark:text-gray-100">Satoshis</span>
+            <span className="font-light text-gray-700 dark:text-gray-300"> - Bitcoin&apos;s Native Currency Unit</span>
           </h1>
-          <p className="text-md md:text-xl font-bold text-gray-700 mt-6 mb-6">
+          <p className="text-md md:text-xl font-bold text-gray-700 dark:text-gray-300 mt-6 mb-6">
             1 Bitcoin = 100,000,000 Satoshis
           </p>
           <div className="max-w-2xl mx-auto">
-            <p className="text-sm md:text-md text-gray-500 mb-1">
+            <p className="text-sm md:text-md text-gray-500 dark:text-gray-400 mb-1">
               Satoshis to Bitcoin, is like Cents to the Dollar
             </p>
-            <p className="text-sm md:text-md text-gray-500 mb-1">
+            <p className="text-sm md:text-md text-gray-500 dark:text-gray-400 mb-1">
               In fact, Bitcoin as a unit does not exist in the Bitcoin code, only Satoshis
             </p>
-            <p className="text-sm md:text-md text-gray-500">
+            <p className="text-sm md:text-md text-gray-500 dark:text-gray-400">
               Let&apos;s compare Bitcoin Satoshi to the world&apos;s top {TOP_CURRENCIES_LIMIT} currencies in Real Time!
             </p>
           </div>
@@ -825,34 +825,34 @@ export default function Home() {
         {/* Loading, Error States */}
         {loading && (
           <div className="text-center py-8">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600 mb-4"></div>
-            <p className="text-gray-600">Loading latest data...</p>
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600 dark:border-blue-400 mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400">Loading latest data...</p>
           </div>
         )}
         
         {/* Ranking Table */}
         {!loading && !error && (
           <>
-            <div className="overflow-x-auto bg-white rounded-lg border border-gray-100 w-full">
+            <div className="overflow-x-auto bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 w-full">
               <div className="min-w-[420px]">
                 <table className="w-full table-fixed">
                   <colgroup>
                     <col className="w-[60px] md:table-column hidden" />  {/* Rank - hidden on mobile */}
-                    <col className="w-[100px] md:w-[180px]" />  {/* Asset/Currency - narrower on mobile */}
+                    <col className="w-[120px] md:w-[180px]" />  {/* Asset/Currency - narrower on mobile */}
                     <col className="w-[140px] hidden sm:table-column" />  {/* GDP/Market Cap - hidden on mobile */}
-                    <col className="w-[130px]" />  {/* Value of 1 SAT */}
+                    <col className="w-[150px]" />  {/* Value of 1 SAT */}
                     <col className="w-[150px]" />  {/* SATS per Unit */}
                   </colgroup>
                   <thead>
-                    <tr className="border-b border-gray-100">
-                      <th className="px-2 md:px-4 py-3 md:py-3 text-left text-xs font-medium text-gray-500 uppercase font-heading hidden md:table-cell">
+                    <tr className="border-b border-gray-100 dark:border-gray-700">
+                      <th className="px-2 md:px-4 py-3 md:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase font-heading hidden md:table-cell">
                         Rank
                       </th>
-                      <th className="px-2 md:px-4 py-3 md:py-3 text-left text-xs font-medium text-gray-500 uppercase font-heading">
+                      <th className="px-2 md:px-4 py-3 md:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase font-heading">
                         Currency
                       </th>
                       <th 
-                        className="px-2 md:px-4 py-3 md:py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading hidden sm:table-cell"
+                        className="px-2 md:px-4 py-3 md:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase cursor-pointer font-heading hidden sm:table-cell"
                         onClick={() => handleSort('economicSize')}
                       >
                         <div className="flex items-center">
@@ -861,7 +861,7 @@ export default function Home() {
                         </div>
                       </th>
                       <th 
-                        className="px-2 md:px-4 py-3 md:py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading"
+                        className="px-2 md:px-4 py-3 md:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase cursor-pointer font-heading"
                         onClick={() => handleSort('valueOfOneSat')}
                       >
                         <div className="flex items-center whitespace-nowrap">
@@ -870,7 +870,7 @@ export default function Home() {
                         </div>
                       </th>
                       <th 
-                        className="px-2 md:px-4 py-3 md:py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading"
+                        className="px-2 md:px-4 py-3 md:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase cursor-pointer font-heading"
                         onClick={() => handleSort('satsPerUnit')}
                       >
                         <div className="flex items-center whitespace-nowrap">
@@ -885,10 +885,10 @@ export default function Home() {
                       <tr 
                         key={currency.code} 
                         className={currency.code === "BTC" 
-                          ? "bg-orange-100" 
-                          : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')}
+                          ? "bg-orange-100 dark:bg-amber-900" 
+                          : (index % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-700')}
                       >
-                        <td className="px-2 md:px-4 py-3 md:py-3 whitespace-nowrap text-sm text-gray-900 hidden md:table-cell">
+                        <td className="px-2 md:px-4 py-3 md:py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 hidden md:table-cell">
                           {currency.rank}
                         </td>
                         <td className="px-2 md:px-4 py-3 md:py-3 whitespace-nowrap">
@@ -896,10 +896,10 @@ export default function Home() {
                             {formatCurrencyDisplay(currency)}
                           </div>
                         </td>
-                        <td className="px-2 md:px-4 py-3 md:py-3 whitespace-nowrap text-sm text-gray-900 hidden sm:table-cell">
+                        <td className="px-2 md:px-4 py-3 md:py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 hidden sm:table-cell">
                           ${formatNumber(currency.economicSize)}
                         </td>
-                        <td className="px-2 md:px-4 py-3 md:py-3 whitespace-nowrap text-sm text-gray-900 font-mono">
+                        <td className="px-2 md:px-4 py-3 md:py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 font-mono">
                           {currency.type === 'metal' 
                             ? `${formatSatValue(currency.valueOfOneSat)} oz`
                             : currency.type === 'fiat' 
@@ -914,7 +914,7 @@ export default function Home() {
                               : '1 SAT'
                           }
                         </td>
-                        <td className="px-2 md:px-4 py-3 md:py-3 whitespace-nowrap text-sm text-gray-900 font-mono">
+                        <td className="px-2 md:px-4 py-3 md:py-3 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 font-mono">
                           {currency.type === 'metal'
                             ? `${formatSatsPerUnit(currency.satsPerUnit)} (per oz)`
                             : (currency.code === 'BTC'
@@ -932,25 +932,25 @@ export default function Home() {
         )}
         
         {/* Explanation Section */}
-        <div className="mt-8 p-5 bg-white rounded-lg border border-gray-100">          
-          <h3 className="text-lg font-medium text-gray-800 mb-2 font-heading">Why Compare GDP to Market Cap?</h3>
-          <p className="text-gray-600 mb-4">
+        <div className="mt-8 p-5 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">          
+          <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2 font-heading">Why Compare GDP to Market Cap?</h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
             We rank fiat currencies by GDP and Bitcoin/metals by market cap for a fair size comparison. GDP provides a consistent measure across countries and is within an order of magnitude of money supply values.
           </p>
           
-          <h3 className="text-lg font-medium text-gray-800 mb-2 font-heading">Data Sources</h3>
-          <ul className="text-sm text-gray-600 list-disc pl-5 space-y-1 mb-4">
+          <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2 font-heading">Data Sources</h3>
+          <ul className="text-sm text-gray-600 dark:text-gray-400 list-disc pl-5 space-y-1 mb-4">
             <li><strong>Bitcoin:</strong> Real-time price from CoinGecko API with an estimated circulating supply of 19.5M BTC</li>
             <li><strong>Gold:</strong> Price via CoinGecko with market cap based on 215,000 metric tons of estimated above-ground supply</li>
             <li><strong>Silver:</strong> Price via CoinGecko with market cap based on 1,800,000 metric tons of estimated above-ground supply</li>
             <li><strong>GDP Data:</strong> IMF World Economic Outlook database ({gdpYear})</li>
           </ul>
           
-          <h3 className="text-lg font-medium text-gray-800 mb-2 font-heading">Eurozone</h3>
-          <p className="text-gray-600 mb-2">
+          <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2 font-heading">Eurozone</h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-2">
             The Euro (EUR) represents the combined GDP of all 20 Euro-using countries.
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-1 text-xs text-gray-500">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-1 text-xs text-gray-500 dark:text-gray-400">
             {EUROZONE_COUNTRIES.map(country => (
               <div key={country} className="px-1">
                 {country}
@@ -960,8 +960,8 @@ export default function Home() {
         </div>
         
         {/* Footer */}
-        <footer className="mt-8 text-center text-gray-400 text-sm p-4">
-          <p>© {new Date().getFullYear()} Satoshis Forex | Created by <a href="https://nakamotolabs.io" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-700 underline">Nakamoto Labs</a> | Data: CoinGecko, IMF</p>
+        <footer className="mt-8 text-center text-gray-400 dark:text-gray-500 text-sm p-4">
+          <p>© {new Date().getFullYear()} Satoshis Forex | Created by <a href="https://nakamotolabs.io" target="_blank" rel="noopener noreferrer" className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 underline">Nakamoto Labs</a> | Data: CoinGecko, IMF</p>
         </footer>
       </div>
     </main>

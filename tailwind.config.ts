@@ -2,6 +2,7 @@ import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
+  darkMode: 'media',
   theme: {
     extend: {
       backgroundImage: {
@@ -12,8 +13,15 @@ const config: Config = {
         sans: ['var(--font-open-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         heading: ['var(--font-montserrat)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
+      colors: {
+        'orange-highlight': {
+          light: '#ffedd5',
+          dark: '#7c2d12',
+        },
+      },
     },
   },
   plugins: [],
 };
+
 export default config;
