@@ -703,11 +703,12 @@ export default function Home() {
               shapeRendering: 'geometricPrecision',
               textRendering: 'optimizeLegibility'
             }}
+            className="md:w-6 md:h-6 w-7 h-7"
           />
         </div>
         <div>
           <div className="font-medium text-gray-900 hidden md:block">{currency.name}</div>
-          <div className="text-xs font-medium text-gray-900 md:text-gray-500 md:font-normal">{currency.code}</div>
+          <div className="text-sm md:text-xs font-medium text-gray-900 md:text-gray-500 md:font-normal">{currency.code}</div>
         </div>
       </div>
     );
@@ -784,7 +785,7 @@ export default function Home() {
             <p className="text-sm md:text-md text-gray-500 mb-1">
               Satoshis to Bitcoin, is like Cents to the Dollar
             </p>
-            <p className="text-sm md:text-md text-gray-500 mb-1 hidden sm:block">
+            <p className="text-sm md:text-md text-gray-500 mb-1">
               In fact, Bitcoin as a unit does not exist in the Bitcoin code, only Satoshis
             </p>
             <p className="text-sm md:text-md text-gray-500">
@@ -839,19 +840,19 @@ export default function Home() {
                     <col className="w-[60px] md:table-column hidden" />  {/* Rank - hidden on mobile */}
                     <col className="w-[100px] md:w-[180px]" />  {/* Asset/Currency - narrower on mobile */}
                     <col className="w-[140px] hidden sm:table-column" />  {/* GDP/Market Cap - hidden on mobile */}
-                    <col className="w-[150px]" />  {/* Value of 1 SAT */}
+                    <col className="w-[130px]" />  {/* Value of 1 SAT */}
                     <col className="w-[150px]" />  {/* SATS per Unit */}
                   </colgroup>
                   <thead>
                     <tr className="border-b border-gray-100">
-                      <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase font-heading hidden md:table-cell">
+                      <th className="px-2 md:px-4 py-3 md:py-3 text-left text-xs font-medium text-gray-500 uppercase font-heading hidden md:table-cell">
                         Rank
                       </th>
-                      <th className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase font-heading">
+                      <th className="px-2 md:px-4 py-3 md:py-3 text-left text-xs font-medium text-gray-500 uppercase font-heading">
                         Currency
                       </th>
                       <th 
-                        className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading hidden sm:table-cell"
+                        className="px-2 md:px-4 py-3 md:py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading hidden sm:table-cell"
                         onClick={() => handleSort('economicSize')}
                       >
                         <div className="flex items-center">
@@ -860,7 +861,7 @@ export default function Home() {
                         </div>
                       </th>
                       <th 
-                        className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading"
+                        className="px-2 md:px-4 py-3 md:py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading"
                         onClick={() => handleSort('valueOfOneSat')}
                       >
                         <div className="flex items-center whitespace-nowrap">
@@ -869,7 +870,7 @@ export default function Home() {
                         </div>
                       </th>
                       <th 
-                        className="px-2 md:px-4 py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading"
+                        className="px-2 md:px-4 py-3 md:py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer font-heading"
                         onClick={() => handleSort('satsPerUnit')}
                       >
                         <div className="flex items-center whitespace-nowrap">
@@ -887,25 +888,33 @@ export default function Home() {
                           ? "bg-orange-100" 
                           : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')}
                       >
-                        <td className="px-2 md:px-4 py-2 md:py-3 whitespace-nowrap text-sm text-gray-900 hidden md:table-cell">
+                        <td className="px-2 md:px-4 py-3 md:py-3 whitespace-nowrap text-sm text-gray-900 hidden md:table-cell">
                           {currency.rank}
                         </td>
-                        <td className="px-2 md:px-4 py-2 md:py-3 whitespace-nowrap">
+                        <td className="px-2 md:px-4 py-3 md:py-3 whitespace-nowrap">
                           <div className="flex items-center">
                             {formatCurrencyDisplay(currency)}
                           </div>
                         </td>
-                        <td className="px-2 md:px-4 py-2 md:py-3 whitespace-nowrap text-sm text-gray-900 hidden sm:table-cell">
+                        <td className="px-2 md:px-4 py-3 md:py-3 whitespace-nowrap text-sm text-gray-900 hidden sm:table-cell">
                           ${formatNumber(currency.economicSize)}
                         </td>
-                        <td className="px-2 md:px-4 py-2 md:py-3 whitespace-nowrap text-sm text-gray-900 font-mono">
+                        <td className="px-2 md:px-4 py-3 md:py-3 whitespace-nowrap text-sm text-gray-900 font-mono">
                           {currency.type === 'metal' 
                             ? `${formatSatValue(currency.valueOfOneSat)} oz`
-                            : (currency.type === 'fiat' 
-                              ? `${formatSatValue(currency.valueOfOneSat)} ${currency.code}`
-                              : `1 SAT`)}
+                            : currency.type === 'fiat' 
+                              ? (
+                                <>
+                                  {formatSatValue(currency.valueOfOneSat)}{' '}
+                                  <span className={currency.code === "BTC" ? "" : "hidden sm:inline"}>
+                                    {currency.code}
+                                  </span>
+                                </>
+                              )
+                              : '1 SAT'
+                          }
                         </td>
-                        <td className="px-2 md:px-4 py-2 md:py-3 whitespace-nowrap text-sm text-gray-900 font-mono">
+                        <td className="px-2 md:px-4 py-3 md:py-3 whitespace-nowrap text-sm text-gray-900 font-mono">
                           {currency.type === 'metal'
                             ? `${formatSatsPerUnit(currency.satsPerUnit)} (per oz)`
                             : (currency.code === 'BTC'
