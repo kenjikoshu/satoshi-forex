@@ -775,7 +775,7 @@ export default function Home() {
         {/* Header Section */}
         <header className="mb-10 text-center">
           <h1 className="text-2xl md:text-4xl lg:text-5xl xl:text-6xl mt-3 mb-3 font-heading tracking-wide">
-            <span className="font-semibold text-gray-800">Satoshi</span>
+            <span className="font-semibold text-gray-800">Satoshis</span>
             <span className="font-light text-gray-700"> - Bitcoin&apos;s Native Currency Unit</span>
           </h1>
           <p className="text-md md:text-xl font-bold text-gray-700 mt-6 mb-6">
@@ -961,7 +961,7 @@ export default function Home() {
         
         {/* Footer */}
         <footer className="mt-8 text-center text-gray-400 text-sm p-4">
-          <p>© {new Date().getFullYear()} Satoshi Forex | Data: CoinGecko, IMF</p>
+          <p>© {new Date().getFullYear()} Satoshis Forex | Created by <a href="https://nakamotolabs.io" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-700 underline">Nakamoto Labs</a> | Data: CoinGecko, IMF</p>
         </footer>
       </div>
     </main>
