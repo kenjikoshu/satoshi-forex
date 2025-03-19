@@ -13,33 +13,54 @@ import { SUPPORTED_FIATS } from '@/services/coingeckoService';
 interface CurrencyConverterProps {
   currencyCode: string;
   btcPrice: number;
-  onCurrencyChange: (newCurrency: string) => void;
+  onCurrencyChange: (newCurrency: string, fiatValue?: string) => void;
+  initialFiatValue?: string;
+  initialSatsValue?: string;
 }
 
 const CurrencyConverter: React.FC<CurrencyConverterProps> = ({
   currencyCode,
   btcPrice,
   onCurrencyChange,
+  initialFiatValue = '1',
+  initialSatsValue,
 }) => {
   // State for input values
-  const [fiatValue, setFiatValue] = useState<string>('1');
+  const [fiatValue, setFiatValue] = useState<string>(initialFiatValue);
   const [btcValue, setBtcValue] = useState<string>('');
-  const [satsValue, setSatsValue] = useState<string>('');
+  const [satsValue, setSatsValue] = useState<string>(initialSatsValue || '');
   
   // Track which input was last modified to avoid circular updates
-  const [lastModified, setLastModified] = useState<'fiat' | 'btc' | 'sats'>('fiat');
+  const [lastModified, setLastModified] = useState<'fiat' | 'btc' | 'sats'>(initialSatsValue ? 'sats' : 'fiat');
   
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === 'dark';
+  
+  // Initialize with initialFiatValue or initialSatsValue when they change
+  useEffect(() => {
+    if (initialSatsValue) {
+      setSatsValue(initialSatsValue);
+      setLastModified('sats');
+      updateFromSats(initialSatsValue);
+    } else if (initialFiatValue) {
+      setFiatValue(initialFiatValue);
+      setLastModified('fiat');
+      updateFromFiat(initialFiatValue);
+    }
+  }, [initialFiatValue, initialSatsValue]);
   
   // Update values when currency or BTC price changes
   useEffect(() => {
     if (btcPrice <= 0) return;
     
     // Recalculate based on the last modified input
-    updateFromFiat(fiatValue);
-    setLastModified('fiat');
-  }, [currencyCode, btcPrice]);
+    if (lastModified === 'sats') {
+      updateFromSats(satsValue);
+    } else {
+      updateFromFiat(fiatValue);
+      setLastModified('fiat');
+    }
+  }, [currencyCode, btcPrice, lastModified, fiatValue, satsValue]);
   
   // Validate numeric input - allows only numbers and decimal point
   const validateNumericInput = (value: string): boolean => {
@@ -124,7 +145,7 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({
   
   // Handle currency selection change
   const handleCurrencyChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    onCurrencyChange(e.target.value);
+    onCurrencyChange(e.target.value, fiatValue);
   };
   
   // Format number with appropriate precision
@@ -146,7 +167,7 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({
             </label>
             <div className="flex rounded-md shadow-sm">
               <select
-                className="rounded-l-md bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 focus:ring-blue-500 focus:border-blue-500 block w-16 px-2 py-2.5 text-sm"
+                className="rounded-l-md bg-gray-50 dark:bg-gray-700 border border-r-0 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 focus:ring-blue-500 focus:border-blue-500 block w-16 px-2 py-2.5 text-sm"
                 value={currencyCode}
                 onChange={handleCurrencyChange}
               >

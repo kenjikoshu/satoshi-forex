@@ -18,6 +18,7 @@ export default function ConversionPage() {
   const [error, setError] = useState<string | null>(null);
   const [yearlyChangePercent, setYearlyChangePercent] = useState<number>(0);
   const [initialFiatValue, setInitialFiatValue] = useState<string>('1');
+  const [initialSatsValue, setInitialSatsValue] = useState<string | null>(null);
   
   // Get and validate the currency code from URL parameters
   useEffect(() => {
@@ -26,16 +27,34 @@ export default function ConversionPage() {
     let currency = String(params.currency).toLowerCase();
     
     // Get fiat value from URL if present
-    const fiatAmount = searchParams.get('amount');
-    if (fiatAmount) {
+    const fiatAmount = searchParams.get('fiat');
+    
+    // Get satoshi value from URL if present
+    const satAmount = searchParams.get('sat');
+    
+    // Handle the case where both fiat and satoshi values are present
+    // If both are specified, ignore the satoshi value
+    if (fiatAmount && satAmount) {
+      // Redirect to remove the sat parameter
+      const queryParams = new URLSearchParams();
+      queryParams.set('fiat', fiatAmount);
+      
+      router.replace(`/convert/${currency}?${queryParams.toString()}`);
       setInitialFiatValue(fiatAmount);
+      setInitialSatsValue(null);
+    } else if (fiatAmount) {
+      setInitialFiatValue(fiatAmount);
+      setInitialSatsValue(null);
+    } else if (satAmount) {
+      setInitialFiatValue('');
+      setInitialSatsValue(satAmount);
     }
     
     // Validate if it's a supported currency
     if (!isSupportedCurrency(currency)) {
-      // Redirect to USD if currency is not supported, preserve amount if exists
-      const queryParam = fiatAmount ? `?amount=${fiatAmount}` : '';
-      router.replace(`/convert/usd${queryParam}`);
+      // Redirect to USD, preserving query parameters
+      const queryParams = new URLSearchParams(searchParams);
+      router.replace(`/convert/usd${queryParams.toString() ? `?${queryParams.toString()}` : ''}`);
       return;
     }
     
@@ -95,9 +114,20 @@ export default function ConversionPage() {
   // Handle currency change selection
   const handleCurrencyChange = (newCurrency: string, fiatValue?: string) => {
     if (newCurrency !== currencyCode) {
-      // Preserve the current fiat value by including it in the URL
-      const amount = fiatValue || searchParams.get('amount') || initialFiatValue;
-      router.push(`/convert/${newCurrency.toLowerCase()}?amount=${amount}`);
+      // Construct query parameters based on which value is active
+      const queryParams = new URLSearchParams();
+      
+      if (fiatValue && fiatValue !== '') {
+        queryParams.set('fiat', fiatValue);
+      } else if (initialSatsValue) {
+        queryParams.set('sat', initialSatsValue);
+      }
+      
+      // Build URL with appropriate query parameters
+      const queryString = queryParams.toString();
+      const url = `/convert/${newCurrency.toLowerCase()}${queryString ? `?${queryString}` : ''}`;
+      
+      router.push(url);
     }
   };
   
@@ -150,6 +180,7 @@ export default function ConversionPage() {
         btcPrice={currentBtcPrice} 
         onCurrencyChange={handleCurrencyChange}
         initialFiatValue={initialFiatValue}
+        initialSatsValue={initialSatsValue || undefined}
       />
       
       {/* Conversion chart */}
