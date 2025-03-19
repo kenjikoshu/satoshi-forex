@@ -146,7 +146,7 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({
             </label>
             <div className="flex rounded-md shadow-sm">
               <select
-                className="rounded-l-md bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 focus:ring-blue-500 focus:border-blue-500 block w-24 sm:w-32 p-2.5 text-sm"
+                className="rounded-l-md bg-gray-50 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 focus:ring-blue-500 focus:border-blue-500 block w-16 px-2 py-2.5 text-sm"
                 value={currencyCode}
                 onChange={handleCurrencyChange}
               >
@@ -175,7 +175,7 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({
           Bitcoin (BTC)
         </label>
         <div className="flex rounded-md shadow-sm">
-          <span className="inline-flex items-center px-3 text-sm rounded-l-md border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
+          <span className="inline-flex items-center justify-center w-16 text-sm rounded-l-md border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
             BTC
           </span>
           <input
@@ -195,7 +195,7 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({
           Satoshis (sats)
         </label>
         <div className="flex rounded-md shadow-sm">
-          <span className="inline-flex items-center px-3 text-sm rounded-l-md border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
+          <span className="inline-flex items-center justify-center w-16 text-sm rounded-l-md border border-r-0 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
             sats
           </span>
           <input
