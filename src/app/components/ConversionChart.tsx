@@ -66,11 +66,10 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
   ): { 
     dates: string[],
     targetSatValues: number[],
-    targetPercentChanges: number[],
-    usdPercentChanges: number[]
+    targetPercentChanges: number[]
   } => {
     if (!targetData || targetData.length === 0) {
-      return { dates: [], targetSatValues: [], targetPercentChanges: [], usdPercentChanges: [] };
+      return { dates: [], targetSatValues: [], targetPercentChanges: [] };
     }
 
     // Get dates from target data
@@ -124,7 +123,6 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
       dates: dates.slice(0, targetPercentChanges.length),
       targetSatValues: targetSatValues.slice(0, targetPercentChanges.length),
       targetPercentChanges,
-      usdPercentChanges
     };
   };
 
@@ -133,49 +131,49 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
     const { 
       dates, 
       targetSatValues, 
-      targetPercentChanges, 
-      usdPercentChanges 
+      targetPercentChanges
     } = normalizeDatasets(targetPriceData, usdPriceData);
+
+    // Filter the dates to only show one per month
+    const uniqueMonths = new Set<string>();
+    const filteredDates: string[] = [];
+    const filteredSatValues: number[] = [];
+    const filteredPercentChanges: number[] = [];
+
+    dates.forEach((date, index) => {
+      const month = date; // Since date is already in 'MMM' format
+      if (!uniqueMonths.has(month)) {
+        uniqueMonths.add(month);
+        filteredDates.push(date);
+        filteredSatValues.push(targetSatValues[index]);
+        filteredPercentChanges.push(targetPercentChanges[index]);
+      }
+    });
 
     // Prepare datasets
     const datasets = [
       {
         label: `${currencyCode.toUpperCase()} to Sat`,
-        data: targetSatValues,
+        data: filteredSatValues,
         borderColor: isDarkMode ? '#fb923c' : '#f97316', // Orange color
         backgroundColor: isDarkMode ? 'rgba(251, 146, 60, 0.5)' : 'rgba(249, 115, 22, 0.5)',
         borderWidth: 2,
         tension: 0.4,
         yAxisID: 'y', // Left axis - raw satoshi values
       },
-    ];
-
-    // Add USD comparison dataset if provided and not USD
-    if (usdPercentChanges.length > 0 && currencyCode.toLowerCase() !== 'usd') {
-      datasets.push({
-        label: 'USD to Sat (% change)',
-        data: usdPercentChanges,
-        borderColor: isDarkMode ? '#4ade80' : '#16a34a', // Green color
-        backgroundColor: isDarkMode ? 'rgba(74, 222, 128, 0.5)' : 'rgba(22, 163, 74, 0.5)',
-        borderWidth: 2,
-        tension: 0.4,
-        yAxisID: 'percentage', // Right axis - percentage changes
-      });
-
-      // Add target currency percentage change dataset for proper comparison
-      datasets.push({
+      {
         label: `${currencyCode.toUpperCase()} to Sat (% change)`,
-        data: targetPercentChanges,
+        data: filteredPercentChanges,
         borderColor: isDarkMode ? '#f59e0b' : '#d97706', // Darker orange for distinction
         backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.5)' : 'rgba(217, 119, 6, 0.5)',
         borderWidth: 1, // Thinner line for distinction
         tension: 0.4,
         yAxisID: 'percentage', // Right axis - percentage changes
-      });
-    }
+      }
+    ];
 
     return {
-      labels: dates,
+      labels: filteredDates,
       datasets,
     };
   };
@@ -192,6 +190,9 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
       x: {
         ticks: {
           color: isDarkMode ? '#9ca3af' : '#4b5563',
+          // Only show one tick per month
+          maxRotation: 0,
+          autoSkip: false
         },
         grid: {
           color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
@@ -205,6 +206,7 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
           display: true,
           text: 'Satoshi Value',
           color: isDarkMode ? '#d1d5db' : '#374151',
+          padding: { top: 0, bottom: 10 }
         },
         ticks: {
           color: isDarkMode ? '#9ca3af' : '#4b5563',
@@ -218,12 +220,13 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
       },
       percentage: {
         type: 'linear',
-        display: usdPriceData && currencyCode.toLowerCase() !== 'usd',
+        display: true,
         position: 'right',
         title: {
           display: true,
           text: 'Percentage Change (%)',
           color: isDarkMode ? '#d1d5db' : '#374151',
+          padding: { top: 0, bottom: 10 }
         },
         ticks: {
           color: isDarkMode ? '#9ca3af' : '#4b5563',
@@ -303,8 +306,8 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
 
   return (
     <div className="w-full bg-white dark:bg-gray-800 rounded-lg shadow p-4 mt-8">
-      <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center">
-        <div>
+      <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+        <div className="px-2 sm:px-4">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
             {currencyCode.toUpperCase()} to Sat Chart{' '}
             <span className={yearChangeColor}>
@@ -312,12 +315,12 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
             </span>
           </h3>
         </div>
-        <div className="text-sm text-right text-gray-600 dark:text-gray-400 mt-1 sm:mt-0">
+        <div className="text-sm text-right text-gray-600 dark:text-gray-400 mt-2 sm:mt-0 px-2 sm:px-4">
           1 {currencyCode.toUpperCase()} = {formatNumber(latestSatValue, 2)} Sats {getLatestDate()}
         </div>
       </div>
       
-      <div className="h-[300px] w-full">
+      <div className="h-[300px] w-full px-2">
         <Line data={prepareChartData()} options={options} />
       </div>
     </div>
