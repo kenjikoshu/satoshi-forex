@@ -2,6 +2,8 @@ import "./globals.css";
 import { Open_Sans, Montserrat } from 'next/font/google';
 import type { Metadata } from 'next';
 import { Analytics } from '@vercel/analytics/react';
+import Header from './components/Header';
+import { ThemeProvider } from 'next-themes';
 
 // Initialize the Open Sans font with specific subsets and weights
 const openSans = Open_Sans({
@@ -16,7 +18,7 @@ const montserrat = Montserrat({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-montserrat',
-  weight: ['400', '500', '600', '700', '800'],
+  weight: ['200', '300', '400', '500', '600', '700', '800'],
 });
 
 // Define metadata for the site including OpenGraph and Twitter cards
@@ -51,9 +53,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${openSans.variable} ${montserrat.variable}`}>
-      <body className="font-sans">
-        {children}
-        <Analytics />
+      <body className="font-sans min-h-screen">
+        <ThemeProvider attribute="class">
+          <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
+            <Header />
+            <main className="flex-grow">
+              {children}
+            </main>
+          </div>
+          <Analytics />
+        </ThemeProvider>
       </body>
     </html>
   );
