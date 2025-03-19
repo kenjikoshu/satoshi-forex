@@ -185,7 +185,7 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
   return (
     <div className="w-full bg-white dark:bg-gray-800 rounded-lg shadow p-4 mt-8">
       <div className="mb-4 pt-2 flex flex-col sm:flex-row justify-between items-start sm:items-center">
-        <div className="px-4">
+        <div className="px-4 w-full sm:w-auto">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
             {currencyCode.toUpperCase()} to Sat Chart{' '}
             <span className={yearChangeColor}>
@@ -193,10 +193,10 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
             </span>
           </h3>
         </div>
-        <div className="text-sm text-right text-gray-600 dark:text-gray-400 mt-1 sm:mt-0 px-4">
-          <div className="flex flex-col items-end">
+        <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 sm:mt-0 px-4 w-full sm:w-auto text-left sm:text-right">
+          <div className="flex flex-col items-start sm:items-end">
             <span>1 {currencyCode.toUpperCase()} = {formatNumber(latestSatValue, 2)} Sats</span>
-            <span className="max-[420px]:mt-1">{getLatestDate()}</span>
+            <span className="mt-1 sm:mt-0">{getLatestDate()}</span>
           </div>
         </div>
       </div>
