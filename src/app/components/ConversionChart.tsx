@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import {
   Chart as ChartJS,
@@ -45,6 +45,23 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
 }) => {
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === 'dark';
+  const [showYAxisLabel, setShowYAxisLabel] = useState(true);
+
+  // Handle responsive behavior
+  useEffect(() => {
+    const handleResize = () => {
+      setShowYAxisLabel(window.innerWidth >= 640);
+    };
+    
+    // Set initial value
+    handleResize();
+    
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+    
+    // Clean up
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Format the data for the chart
   const prepareChartData = (): ChartData<'line'> => {
@@ -111,7 +128,7 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
         display: true,
         position: 'left',
         title: {
-          display: true,
+          display: showYAxisLabel,
           text: 'Satoshi Value',
           color: isDarkMode ? '#d1d5db' : '#374151',
         },
