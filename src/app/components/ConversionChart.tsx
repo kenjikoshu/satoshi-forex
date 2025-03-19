@@ -59,27 +59,89 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
     });
   };
 
-  // Format the data for the chart
-  const prepareChartData = (): ChartData<'line'> => {
-    const dates = targetPriceData.map(pair => {
+  // Normalize data to ensure both datasets start at the same point
+  const normalizeDatasets = (
+    targetData: [number, number][], 
+    usdData?: [number, number][]
+  ): { 
+    dates: string[],
+    targetSatValues: number[],
+    targetPercentChanges: number[],
+    usdPercentChanges: number[]
+  } => {
+    if (!targetData || targetData.length === 0) {
+      return { dates: [], targetSatValues: [], targetPercentChanges: [], usdPercentChanges: [] };
+    }
+
+    // Get dates from target data
+    const dates = targetData.map(pair => {
       const date = new Date(pair[0]);
       return date.toLocaleDateString('en-US', { month: 'short' });
     });
 
-    // For fiat prices, we need to convert to satoshi values (sat per fiat unit)
-    const satValues = targetPriceData.map(pair => {
+    // Calculate Satoshi values for target currency
+    const targetSatValues = targetData.map(pair => {
       const btcPrice = pair[1];
       return btcPrice ? 100000000 / btcPrice : 0;
     });
 
     // Calculate percentage changes for target currency
-    const targetPercentChanges = calculatePercentageChanges(targetPriceData);
+    const firstTargetSatValue = targetSatValues[0];
+    const targetPercentChanges = targetSatValues.map(value => 
+      ((value - firstTargetSatValue) / firstTargetSatValue) * 100
+    );
+    
+    // Explicitly set first point to 0% for proper alignment
+    if (targetPercentChanges.length > 0) {
+      targetPercentChanges[0] = 0;
+    }
+
+    // Calculate USD percentage changes if USD data provided
+    let usdPercentChanges: number[] = [];
+    if (usdData && usdData.length > 0) {
+      const usdSatValues = usdData.map(pair => {
+        const btcPrice = pair[1];
+        return btcPrice ? 100000000 / btcPrice : 0;
+      });
+
+      const firstUsdSatValue = usdSatValues[0];
+      usdPercentChanges = usdSatValues.map(value => 
+        ((value - firstUsdSatValue) / firstUsdSatValue) * 100
+      );
+      
+      // Explicitly set first point to 0% for proper alignment
+      if (usdPercentChanges.length > 0) {
+        usdPercentChanges[0] = 0;
+      }
+
+      // Ensure both datasets have the same length
+      const minLength = Math.min(targetPercentChanges.length, usdPercentChanges.length);
+      targetPercentChanges.length = minLength;
+      usdPercentChanges.length = minLength;
+    }
+
+    return {
+      dates: dates.slice(0, targetPercentChanges.length),
+      targetSatValues: targetSatValues.slice(0, targetPercentChanges.length),
+      targetPercentChanges,
+      usdPercentChanges
+    };
+  };
+
+  // Format the data for the chart
+  const prepareChartData = (): ChartData<'line'> => {
+    const { 
+      dates, 
+      targetSatValues, 
+      targetPercentChanges, 
+      usdPercentChanges 
+    } = normalizeDatasets(targetPriceData, usdPriceData);
 
     // Prepare datasets
     const datasets = [
       {
         label: `${currencyCode.toUpperCase()} to Sat`,
-        data: satValues,
+        data: targetSatValues,
         borderColor: isDarkMode ? '#fb923c' : '#f97316', // Orange color
         backgroundColor: isDarkMode ? 'rgba(251, 146, 60, 0.5)' : 'rgba(249, 115, 22, 0.5)',
         borderWidth: 2,
@@ -89,16 +151,24 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
     ];
 
     // Add USD comparison dataset if provided and not USD
-    if (usdPriceData && currencyCode.toLowerCase() !== 'usd') {
-      // Calculate USD percentage changes
-      const usdPercentChanges = calculatePercentageChanges(usdPriceData);
-
+    if (usdPercentChanges.length > 0 && currencyCode.toLowerCase() !== 'usd') {
       datasets.push({
         label: 'USD to Sat (% change)',
         data: usdPercentChanges,
         borderColor: isDarkMode ? '#4ade80' : '#16a34a', // Green color
         backgroundColor: isDarkMode ? 'rgba(74, 222, 128, 0.5)' : 'rgba(22, 163, 74, 0.5)',
         borderWidth: 2,
+        tension: 0.4,
+        yAxisID: 'percentage', // Right axis - percentage changes
+      });
+
+      // Add target currency percentage change dataset for proper comparison
+      datasets.push({
+        label: `${currencyCode.toUpperCase()} to Sat (% change)`,
+        data: targetPercentChanges,
+        borderColor: isDarkMode ? '#f59e0b' : '#d97706', // Darker orange for distinction
+        backgroundColor: isDarkMode ? 'rgba(245, 158, 11, 0.5)' : 'rgba(217, 119, 6, 0.5)',
+        borderWidth: 1, // Thinner line for distinction
         tension: 0.4,
         yAxisID: 'percentage', // Right axis - percentage changes
       });
@@ -161,6 +231,8 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
             return `${(value as number).toFixed(1)}%`;
           },
         },
+        min: -100, // Set reasonable bounds for percentage changes
+        max: 100,  // Adjust these based on your data range if needed
         grid: {
           drawOnChartArea: false, // Only show grid lines for the left axis
         },
