@@ -971,10 +971,49 @@ export default function Home() {
            </div>
          </div>
          
-         {/* Footer */}
-         <footer className="mt-8 text-center text-gray-400 dark:text-gray-500 text-sm p-4">
-           <p>© {new Date().getFullYear()} Satoshis Forex | Created by <a href="https://nakamotolabs.io" target="_blank" rel="noopener noreferrer" className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 underline">Nakamoto Labs</a> | Data: CoinGecko, IMF</p>
-         </footer>
+         {/* About Section */}
+         {!loading && !error && (
+           <div className="mt-8 p-6 bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-100 dark:border-gray-700">
+             <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">About the Rankings</h2>
+             <p className="text-gray-700 dark:text-gray-300 mb-4">
+               Why GDP and Market Cap? We rank fiat by GDP and Bitcoin, Gold, and Silver by market cap for a fair comparison. 
+               The table shows Bitcoin, Gold, Silver, and the top {TOP_CURRENCIES_LIMIT} currencies by GDP. 
+               GDP data is sourced from the IMF&apos;s World Economic Outlook database.
+             </p>
+             
+             <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg">
+               <h3 className="text-lg font-medium text-blue-900 dark:text-blue-300 mb-2">Data Sources</h3>
+               <ul className="text-sm text-blue-800 dark:text-blue-200 list-disc pl-5 space-y-1">
+                 <li>
+                   <strong>Bitcoin:</strong> Real-time price and market cap from CoinGecko API
+                 </li>
+                 <li>
+                   <strong>Gold &amp; Silver:</strong> Prices derived from Bitcoin-to-Gold and Bitcoin-to-Silver ratios via CoinGecko API, with market caps calculated using:
+                   <ul className="list-circle pl-5 mt-1 space-y-1">
+                     <li>Gold: 215,000 metric tons of estimated above-ground supply</li>
+                     <li>Silver: 1,800,000 metric tons of estimated above-ground supply</li>
+                   </ul>
+                 </li>
+                 <li>
+                   <strong>GDP Data:</strong> IMF World Economic Outlook database (via proxy API)
+                 </li>
+                 <li>
+                   <strong>Eurozone:</strong> Combined GDP of all 20 Euro-using countries:
+                   <div className="grid grid-cols-2 md:grid-cols-4 gap-1 mt-1 text-xs">
+                     {EUROZONE_COUNTRIES.map(country => (
+                       <div key={country} className="px-1">
+                         {getCurrencyName(country)} ({country})
+                       </div>
+                     ))}
+                   </div>
+                 </li>
+               </ul>
+               <p className="text-sm text-blue-800 dark:text-blue-200 mt-3">
+                 Note: When API connectivity issues occur, the application falls back to sample data for GDP values and metal prices.
+               </p>
+             </div>
+           </div>
+         )}
       </div>
     </main>
   );
