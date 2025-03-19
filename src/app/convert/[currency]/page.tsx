@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import ConversionChart from '@/app/components/ConversionChart';
 import CurrencyConverter from '@/app/components/CurrencyConverter';
@@ -10,12 +10,14 @@ import { fetchBitcoinPriceHistory, fetchCurrentBitcoinPrices, isSupportedCurrenc
 export default function ConversionPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [currencyCode, setCurrencyCode] = useState<string>('');
   const [currentBtcPrice, setCurrentBtcPrice] = useState<number>(0);
   const [priceHistory, setPriceHistory] = useState<[number, number][]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [yearlyChangePercent, setYearlyChangePercent] = useState<number>(0);
+  const [initialFiatValue, setInitialFiatValue] = useState<string>('1');
   
   // Get and validate the currency code from URL parameters
   useEffect(() => {
@@ -23,15 +25,22 @@ export default function ConversionPage() {
     
     let currency = String(params.currency).toLowerCase();
     
+    // Get fiat value from URL if present
+    const fiatAmount = searchParams.get('amount');
+    if (fiatAmount) {
+      setInitialFiatValue(fiatAmount);
+    }
+    
     // Validate if it's a supported currency
     if (!isSupportedCurrency(currency)) {
-      // Redirect to USD if currency is not supported
-      router.replace('/convert/usd');
+      // Redirect to USD if currency is not supported, preserve amount if exists
+      const queryParam = fiatAmount ? `?amount=${fiatAmount}` : '';
+      router.replace(`/convert/usd${queryParam}`);
       return;
     }
     
     setCurrencyCode(currency);
-  }, [params.currency, router]);
+  }, [params.currency, router, searchParams]);
   
   // Fetch price data when currency code changes
   useEffect(() => {
@@ -84,9 +93,11 @@ export default function ConversionPage() {
   }, [currencyCode]);
   
   // Handle currency change selection
-  const handleCurrencyChange = (newCurrency: string) => {
+  const handleCurrencyChange = (newCurrency: string, fiatValue?: string) => {
     if (newCurrency !== currencyCode) {
-      router.push(`/convert/${newCurrency.toLowerCase()}`);
+      // Preserve the current fiat value by including it in the URL
+      const amount = fiatValue || searchParams.get('amount') || initialFiatValue;
+      router.push(`/convert/${newCurrency.toLowerCase()}?amount=${amount}`);
     }
   };
   
@@ -137,7 +148,8 @@ export default function ConversionPage() {
       <CurrencyConverter 
         currencyCode={currencyCode} 
         btcPrice={currentBtcPrice} 
-        onCurrencyChange={handleCurrencyChange} 
+        onCurrencyChange={handleCurrencyChange}
+        initialFiatValue={initialFiatValue}
       />
       
       {/* Conversion chart */}
@@ -149,6 +161,11 @@ export default function ConversionPage() {
           yearlyChangePercent={yearlyChangePercent}
         />
       )}
+
+      {/* Footer */}
+      <footer className="mt-8 text-center text-gray-400 dark:text-gray-500 text-sm p-4">
+        <p>© {new Date().getFullYear()} Satoshis Forex | Created by <a href="https://nakamotolabs.io" target="_blank" rel="noopener noreferrer" className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 underline">Nakamoto Labs</a> | Data: CoinGecko, IMF</p>
+      </footer>
     </div>
   );
 } 
