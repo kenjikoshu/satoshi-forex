@@ -194,9 +194,9 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
           </h3>
         </div>
         <div className="text-sm text-right text-gray-600 dark:text-gray-400 mt-1 sm:mt-0 px-4">
-          <div>
-            <span>1 {currencyCode.toUpperCase()} = {formatNumber(latestSatValue, 2)} Sats</span>{' '}
-            <span className="max-[420px]:block max-[420px]:mt-1">{getLatestDate()}</span>
+          <div className="flex flex-col items-end">
+            <span>1 {currencyCode.toUpperCase()} = {formatNumber(latestSatValue, 2)} Sats</span>
+            <span className="max-[420px]:mt-1">{getLatestDate()}</span>
           </div>
         </div>
       </div>
