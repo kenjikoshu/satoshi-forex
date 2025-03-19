@@ -12,9 +12,7 @@ export default function ConversionPage() {
   const router = useRouter();
   const [currencyCode, setCurrencyCode] = useState<string>('');
   const [currentBtcPrice, setCurrentBtcPrice] = useState<number>(0);
-  const [btcUsdPrice, setBtcUsdPrice] = useState<number>(0);
   const [priceHistory, setPriceHistory] = useState<[number, number][]>([]);
-  const [usdPriceHistory, setUsdPriceHistory] = useState<[number, number][]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [yearlyChangePercent, setYearlyChangePercent] = useState<number>(0);
@@ -44,22 +42,14 @@ export default function ConversionPage() {
         setLoading(true);
         setError(null);
         
-        // Fetch current prices for the selected currency and USD (for comparison)
-        const targetCurrencies = currencyCode === 'usd' 
-          ? [currencyCode] 
-          : [currencyCode, 'usd'];
-        
-        const currentPrices = await fetchCurrentBitcoinPrices(targetCurrencies);
+        // Fetch current prices for the selected currency
+        const currentPrices = await fetchCurrentBitcoinPrices([currencyCode]);
         
         if (!currentPrices.bitcoin || !currentPrices.bitcoin[currencyCode]) {
           throw new Error(`Failed to fetch current price for ${currencyCode}`);
         }
         
         setCurrentBtcPrice(currentPrices.bitcoin[currencyCode]);
-        
-        if (currencyCode !== 'usd' && currentPrices.bitcoin.usd) {
-          setBtcUsdPrice(currentPrices.bitcoin.usd);
-        }
         
         // Fetch historical price data for the selected currency
         const priceData = await fetchBitcoinPriceHistory(currencyCode);
@@ -70,24 +60,17 @@ export default function ConversionPage() {
         
         setPriceHistory(priceData.prices);
         
-        // Calculate yearly percentage change in Satoshi value (not Bitcoin price)
-        const oldestBtcPrice = priceData.prices[0][1]; 
-        const newestBtcPrice = priceData.prices[priceData.prices.length - 1][1];
-        // Convert to Satoshi values: 100,000,000 / BTC price
-        const oldestSatValue = 100000000 / oldestBtcPrice;
-        const newestSatValue = 100000000 / newestBtcPrice;
-        // Calculate percentage change based on Satoshi values
-        const yearlyChange = ((newestSatValue - oldestSatValue) / oldestSatValue) * 100;
-        setYearlyChangePercent(yearlyChange);
+        // Calculate yearly percentage change
+        const oldestPriceInBtc = priceData.prices[0][1];
+        const newestPriceInBtc = priceData.prices[priceData.prices.length - 1][1];
         
-        // If not USD, fetch USD historical data for comparison
-        if (currencyCode !== 'usd') {
-          const usdData = await fetchBitcoinPriceHistory('usd');
-          
-          if (usdData.prices && usdData.prices.length > 0) {
-            setUsdPriceHistory(usdData.prices);
-          }
-        }
+        // For satoshi value, we need to invert the percentage calculation
+        // If BTC price in fiat goes up, satoshi value of fiat goes down and vice versa
+        const oldestSatValue = 100000000 / oldestPriceInBtc;
+        const newestSatValue = 100000000 / newestPriceInBtc;
+        const yearlyChange = ((newestSatValue - oldestSatValue) / oldestSatValue) * 100;
+        
+        setYearlyChangePercent(yearlyChange);
         
         setLoading(false);
       } catch (error) {
@@ -157,7 +140,6 @@ export default function ConversionPage() {
         <ConversionChart
           currencyCode={currencyCode}
           targetPriceData={priceHistory}
-          usdPriceData={currencyCode !== 'usd' ? usdPriceHistory : undefined}
           latestSatValue={calculateLatestSatValue()}
           yearlyChangePercent={yearlyChangePercent}
         />
