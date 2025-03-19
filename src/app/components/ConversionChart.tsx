@@ -11,6 +11,7 @@ import {
   Title,
   Tooltip,
   Legend,
+  Filler,
   ChartOptions,
   ChartData,
 } from 'chart.js';
@@ -25,7 +26,8 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 );
 
 interface ConversionChartProps {
@@ -64,10 +66,11 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
         label: `${currencyCode.toUpperCase()} to Sat`,
         data: satValues,
         borderColor: isDarkMode ? '#fb923c' : '#f97316', // Orange color
-        backgroundColor: isDarkMode ? 'rgba(251, 146, 60, 0.5)' : 'rgba(249, 115, 22, 0.5)',
+        backgroundColor: isDarkMode ? 'rgba(251, 146, 60, 0.2)' : 'rgba(249, 115, 22, 0.2)',
         borderWidth: 2,
         tension: 0.4,
-        yAxisID: 'y',
+        pointRadius: 0, // Remove point bubbles
+        fill: 'start', // Fill from the zero line
       },
     ];
 
@@ -145,6 +148,9 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
           }
         }
       },
+      filler: {
+        propagate: true
+      },
     },
   };
 
@@ -178,7 +184,7 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
 
   return (
     <div className="w-full bg-white dark:bg-gray-800 rounded-lg shadow p-4 mt-8">
-      <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+      <div className="mb-4 pt-2 flex flex-col sm:flex-row justify-between items-start sm:items-center">
         <div className="px-4">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
             {currencyCode.toUpperCase()} to Sat Chart{' '}

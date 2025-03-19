@@ -137,10 +137,6 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({
   
   return (
     <div className="w-full bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-      <h2 className="text-xl font-montserrat font-semibold text-center mb-6 text-gray-800 dark:text-gray-100">
-        Convert between Satoshis & Fiat
-      </h2>
-      
       {/* Fiat Currency Input */}
       <div className="mb-6">
         <div className="flex">
