@@ -942,6 +942,39 @@ export default function Home() {
             </div>
           </>
         )}
+                
+         {/* Explanation Section */}
+         <div className="mt-8 p-5 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">          
+           <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2 font-heading">Why Compare GDP to Market Cap?</h3>
+           <p className="text-gray-600 dark:text-gray-400 mb-4">
+             We rank fiat currencies by GDP and Bitcoin/metals by market cap for a fair size comparison. GDP provides a consistent measure across countries and is within an order of magnitude of money supply values.
+           </p>
+           
+           <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2 font-heading">Data Sources</h3>
+           <ul className="text-sm text-gray-600 dark:text-gray-400 list-disc pl-5 space-y-1 mb-4">
+             <li><strong>Bitcoin:</strong> Real-time price from CoinGecko API with an estimated circulating supply of 19.5M BTC</li>
+             <li><strong>Gold:</strong> Price via CoinGecko with market cap based on 215,000 metric tons of estimated above-ground supply</li>
+             <li><strong>Silver:</strong> Price via CoinGecko with market cap based on 1,800,000 metric tons of estimated above-ground supply</li>
+             <li><strong>GDP Data:</strong> IMF World Economic Outlook database ({gdpYear})</li>
+           </ul>
+           
+           <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-2 font-heading">Eurozone</h3>
+           <p className="text-gray-600 dark:text-gray-400 mb-2">
+             The Euro (EUR) represents the combined GDP of all 20 Euro-using countries.
+           </p>
+           <div className="grid grid-cols-2 md:grid-cols-4 gap-1 text-xs text-gray-500 dark:text-gray-400">
+             {EUROZONE_COUNTRIES.map(country => (
+               <div key={country} className="px-1">
+                 {country}
+               </div>
+             ))}
+           </div>
+         </div>
+         
+         {/* Footer */}
+         <footer className="mt-8 text-center text-gray-400 dark:text-gray-500 text-sm p-4">
+           <p>© {new Date().getFullYear()} Satoshis Forex | Created by <a href="https://nakamotolabs.io" target="_blank" rel="noopener noreferrer" className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 underline">Nakamoto Labs</a> | Data: CoinGecko, IMF</p>
+         </footer>
       </div>
     </main>
   );
