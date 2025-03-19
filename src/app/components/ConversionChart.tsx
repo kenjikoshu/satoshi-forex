@@ -46,6 +46,19 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === 'dark';
 
+  // Calculate percentage change for USD data relative to first data point
+  const calculatePercentageChanges = (data: [number, number][]): number[] => {
+    if (!data || data.length === 0) return [];
+    
+    const firstValue = data[0] ? 100000000 / data[0][1] : 0; // First satoshi value
+    if (firstValue === 0) return [];
+    
+    return data.map(pair => {
+      const satValue = 100000000 / pair[1];
+      return ((satValue - firstValue) / firstValue) * 100;
+    });
+  };
+
   // Format the data for the chart
   const prepareChartData = (): ChartData<'line'> => {
     const dates = targetPriceData.map(pair => {
@@ -59,6 +72,9 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
       return btcPrice ? 100000000 / btcPrice : 0;
     });
 
+    // Calculate percentage changes for target currency
+    const targetPercentChanges = calculatePercentageChanges(targetPriceData);
+
     // Prepare datasets
     const datasets = [
       {
@@ -68,25 +84,23 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
         backgroundColor: isDarkMode ? 'rgba(251, 146, 60, 0.5)' : 'rgba(249, 115, 22, 0.5)',
         borderWidth: 2,
         tension: 0.4,
-        yAxisID: 'y',
+        yAxisID: 'y', // Left axis - raw satoshi values
       },
     ];
 
     // Add USD comparison dataset if provided and not USD
     if (usdPriceData && currencyCode.toLowerCase() !== 'usd') {
-      const usdSatValues = usdPriceData.map(pair => {
-        const btcPrice = pair[1];
-        return btcPrice ? 100000000 / btcPrice : 0;
-      });
+      // Calculate USD percentage changes
+      const usdPercentChanges = calculatePercentageChanges(usdPriceData);
 
       datasets.push({
-        label: 'USD to Sat',
-        data: usdSatValues,
+        label: 'USD to Sat (% change)',
+        data: usdPercentChanges,
         borderColor: isDarkMode ? '#4ade80' : '#16a34a', // Green color
         backgroundColor: isDarkMode ? 'rgba(74, 222, 128, 0.5)' : 'rgba(22, 163, 74, 0.5)',
         borderWidth: 2,
         tension: 0.4,
-        yAxisID: 'y',
+        yAxisID: 'percentage', // Right axis - percentage changes
       });
     }
 
@@ -124,9 +138,31 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
         },
         ticks: {
           color: isDarkMode ? '#9ca3af' : '#4b5563',
+          callback: (value) => {
+            return formatNumber(value as number, 0);
+          },
         },
         grid: {
           color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+        },
+      },
+      percentage: {
+        type: 'linear',
+        display: usdPriceData && currencyCode.toLowerCase() !== 'usd',
+        position: 'right',
+        title: {
+          display: true,
+          text: 'Percentage Change (%)',
+          color: isDarkMode ? '#d1d5db' : '#374151',
+        },
+        ticks: {
+          color: isDarkMode ? '#9ca3af' : '#4b5563',
+          callback: (value) => {
+            return `${(value as number).toFixed(1)}%`;
+          },
+        },
+        grid: {
+          drawOnChartArea: false, // Only show grid lines for the left axis
         },
       },
     },
@@ -151,7 +187,14 @@ const ConversionChart: React.FC<ConversionChartProps> = ({
         callbacks: {
           label: function(context) {
             const value = context.raw as number;
-            return `${context.dataset.label}: ${formatNumber(value, 2)} Sats`;
+            const datasetLabel = context.dataset.label || '';
+            
+            // Format differently based on which dataset this is
+            if (datasetLabel.includes('% change')) {
+              return `${datasetLabel}: ${value.toFixed(2)}%`;
+            } else {
+              return `${datasetLabel}: ${formatNumber(value, 2)} Sats`;
+            }
           }
         }
       },

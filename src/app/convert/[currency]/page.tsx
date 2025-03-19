@@ -70,10 +70,14 @@ export default function ConversionPage() {
         
         setPriceHistory(priceData.prices);
         
-        // Calculate yearly percentage change
-        const oldestPrice = priceData.prices[0][1];
-        const newestPrice = priceData.prices[priceData.prices.length - 1][1];
-        const yearlyChange = ((newestPrice - oldestPrice) / oldestPrice) * 100;
+        // Calculate yearly percentage change in Satoshi value (not Bitcoin price)
+        const oldestBtcPrice = priceData.prices[0][1]; 
+        const newestBtcPrice = priceData.prices[priceData.prices.length - 1][1];
+        // Convert to Satoshi values: 100,000,000 / BTC price
+        const oldestSatValue = 100000000 / oldestBtcPrice;
+        const newestSatValue = 100000000 / newestBtcPrice;
+        // Calculate percentage change based on Satoshi values
+        const yearlyChange = ((newestSatValue - oldestSatValue) / oldestSatValue) * 100;
         setYearlyChangePercent(yearlyChange);
         
         // If not USD, fetch USD historical data for comparison
