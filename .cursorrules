@@ -7,9 +7,3 @@ You are an expert in TypeScript, Next.js App Router, React, and Tailwind. Follow
   - src/app/lib has all the other code like helpers, hooks, and contexts\
 
   Do not use fallback data anywhere. Either grab it from APIs, or grab it from local JSON
-
-  Don't commit and push until I explicitly ask to do so
-
-  Always use escaping characters to avoid lint issues
-
-  Always kill, build and start

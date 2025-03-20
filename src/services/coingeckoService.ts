@@ -21,8 +21,12 @@ export const SUPPORTED_FIATS = [
 
 /**
  * Fetch Bitcoin price history for the past year in a specified currency
+ * Also returns the current price (the last price in the chart data)
  */
-export async function fetchBitcoinPriceHistory(currency: string): Promise<MarketChartResponse> {
+export async function fetchBitcoinPriceHistory(currency: string): Promise<{
+  marketChart: MarketChartResponse;
+  currentPrice: number;
+}> {
   try {
     const response = await fetch(
       `https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=${currency.toLowerCase()}&days=365&precision=full`,
@@ -33,7 +37,15 @@ export async function fetchBitcoinPriceHistory(currency: string): Promise<Market
       throw new Error(`CoinGecko API error: ${response.status} ${response.statusText}`);
     }
     
-    return await response.json();
+    const marketChart: MarketChartResponse = await response.json();
+    
+    // Extract the current price (last price in the prices array)
+    const currentPrice = marketChart.prices[marketChart.prices.length - 1][1];
+    
+    return {
+      marketChart,
+      currentPrice
+    };
   } catch (error) {
     console.error("Error fetching Bitcoin price history:", error);
     throw error;
@@ -42,6 +54,7 @@ export async function fetchBitcoinPriceHistory(currency: string): Promise<Market
 
 /**
  * Fetch current Bitcoin prices in multiple currencies
+ * @deprecated Use fetchBitcoinPriceHistory instead which includes current price
  */
 export async function fetchCurrentBitcoinPrices(currencies: string[]): Promise<CoinGeckoSimplePriceResponse> {
   try {

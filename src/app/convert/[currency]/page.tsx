@@ -5,7 +5,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import ConversionChart from '@/app/components/ConversionChart';
 import CurrencyConverter from '@/app/components/CurrencyConverter';
-import { fetchBitcoinPriceHistory, fetchCurrentBitcoinPrices, isSupportedCurrency, SUPPORTED_FIATS, getCurrencyName } from '@/services/coingeckoService';
+import { fetchBitcoinPriceHistory, isSupportedCurrency, SUPPORTED_FIATS, getCurrencyName } from '@/services/coingeckoService';
 
 export default function ConversionPage() {
   const params = useParams();
@@ -70,27 +70,22 @@ export default function ConversionPage() {
         setLoading(true);
         setError(null);
         
-        // Fetch current prices for the selected currency
-        const currentPrices = await fetchCurrentBitcoinPrices([currencyCode]);
-        
-        if (!currentPrices.bitcoin || !currentPrices.bitcoin[currencyCode]) {
-          throw new Error(`Failed to fetch current price for ${currencyCode}`);
-        }
-        
-        setCurrentBtcPrice(currentPrices.bitcoin[currencyCode]);
-        
-        // Fetch historical price data for the selected currency
+        // Fetch historical price data for the selected currency - this now also includes current price
         const priceData = await fetchBitcoinPriceHistory(currencyCode);
         
-        if (!priceData.prices || priceData.prices.length === 0) {
+        if (!priceData.marketChart.prices || priceData.marketChart.prices.length === 0) {
           throw new Error(`Failed to fetch historical price data for ${currencyCode}`);
         }
         
-        setPriceHistory(priceData.prices);
+        // Set price history from the market chart data
+        setPriceHistory(priceData.marketChart.prices);
+        
+        // Set current BTC price from the market chart data (latest price point)
+        setCurrentBtcPrice(priceData.currentPrice);
         
         // Calculate yearly percentage change
-        const oldestPriceInBtc = priceData.prices[0][1];
-        const newestPriceInBtc = priceData.prices[priceData.prices.length - 1][1];
+        const oldestPriceInBtc = priceData.marketChart.prices[0][1];
+        const newestPriceInBtc = priceData.marketChart.prices[priceData.marketChart.prices.length - 1][1];
         
         // For satoshi value, we need to invert the percentage calculation
         // If BTC price in fiat goes up, satoshi value of fiat goes down and vice versa
