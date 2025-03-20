@@ -182,8 +182,8 @@ export async function GET(req: NextRequest) {
     };
 
     // Load the subsetted Montserrat fonts (for title)
-    const montserratBold = await fetch(
-      new URL('../../../../public/fonts/subset/Montserrat-Bold.subset.ttf', import.meta.url)
+    const montserratMedium = await fetch(
+      new URL('../../../../public/fonts/subset/Montserrat-Medium.subset.ttf', import.meta.url)
     ).then((res) => res.arrayBuffer());
     
     const montserratLight = await fetch(
@@ -242,7 +242,7 @@ export async function GET(req: NextRequest) {
               justifyContent: 'flex-start',
               backgroundColor: 'white',
               borderRadius: '16px',
-              padding: '32px',
+              padding: '28px',
               boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
               width: '95%', // Increased width to make box larger
               height: '95%', // Added height to make box larger
@@ -252,18 +252,23 @@ export async function GET(req: NextRequest) {
             <div 
               style={{ 
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginBottom: '24px',
                 fontFamily: 'Montserrat',
-                fontSize: '52px',
                 lineHeight: 1.2,
                 color: '#1f2937',
                 textAlign: 'center',
               }}
             >
-              <span style={{ fontWeight: 700 }}>Satoshis&nbsp;</span>
-              <span style={{ fontWeight: 300 }}>- Bitcoin&apos;s Native Currency Unit</span>
+              <div style={{ display: 'flex', alignItems: 'baseline' }}>
+                <span style={{ fontWeight: 500, fontSize: '50px', color: '#f97316' }}>satoshis</span>
+                <span style={{ fontWeight: 300, fontSize: '50px', color: '#1f2937' }}>.forex</span>
+              </div>
+              <div style={{ display: 'flex' }}>
+                <span style={{ fontWeight: 500, fontSize: '24px', color: '#4b5563' }}>Satoshis - Bitcoin&apos;s Native Currency Unit</span>
+              </div>
             </div>
 
             {/* Table - using Open Sans font */}
@@ -284,7 +289,7 @@ export async function GET(req: NextRequest) {
                   display: 'flex',
                   backgroundColor: '#f8fafc',
                   borderBottom: '2px solid #e5e7eb',
-                  height: '50px',
+                  height: '45px',
                 }}
               >
                 {/* Currency header */}
@@ -343,7 +348,7 @@ export async function GET(req: NextRequest) {
                     display: 'flex',
                     backgroundColor: index % 2 === 0 ? 'white' : '#f3f4f6',
                     borderBottom: index < currencies.length - 1 ? '1px solid #e5e7eb' : 'none',
-                    height: '80px',
+                    height: '75px',
                   }}
                 >
                   {/* Currency column */}
@@ -444,8 +449,8 @@ export async function GET(req: NextRequest) {
           // Montserrat fonts for the title
           {
             name: 'Montserrat',
-            data: montserratBold,
-            weight: 700,
+            data: montserratMedium,
+            weight: 500,
             style: 'normal',
           },
           {
