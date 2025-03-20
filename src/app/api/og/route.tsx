@@ -162,12 +162,12 @@ export async function GET(req: NextRequest) {
     };
 
     // Load the subsetted Montserrat fonts (for title)
-    const montserratMedium = await fetch(
-      new URL('../../../../public/fonts/subset/Montserrat-Medium.tiny.ttf', import.meta.url)
+    const montserratSemiBold = await fetch(
+      new URL('../../../../public/fonts/subset/Montserrat-SemiBold.tiny.ttf', import.meta.url)
     ).then((res) => res.arrayBuffer());
     
-    const montserratLight = await fetch(
-      new URL('../../../../public/fonts/subset/Montserrat-Light.tiny.ttf', import.meta.url)
+    const montserratRegular = await fetch(
+      new URL('../../../../public/fonts/subset/Montserrat-Regular.tiny.ttf', import.meta.url)
     ).then((res) => res.arrayBuffer());
 
     // Load the subsetted Open Sans fonts (for everything else)
@@ -243,11 +243,11 @@ export async function GET(req: NextRequest) {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                <span style={{ fontWeight: 500, fontSize: '50px', color: '#f97316' }}>satoshis</span>
-                <span style={{ fontWeight: 300, fontSize: '50px', color: '#1f2937' }}>.forex</span>
+                <span style={{ fontWeight: 600, fontSize: '50px', color: '#f97316' }}>satoshis</span>
+                <span style={{ fontWeight: 400, fontSize: '50px', color: '#1f2937' }}>.forex</span>
               </div>
               <div style={{ display: 'flex' }}>
-                <span style={{ fontWeight: 500, fontSize: '24px', color: '#4b5563' }}>Satoshis - Bitcoin&apos;s Native Currency Unit</span>
+                <span style={{ fontWeight: 600, fontSize: '24px', color: '#4b5563' }}>Satoshis - Bitcoin&apos;s Native Currency Unit</span>
               </div>
             </div>
 
@@ -429,14 +429,14 @@ export async function GET(req: NextRequest) {
           // Montserrat fonts for the title
           {
             name: 'Montserrat',
-            data: montserratMedium,
-            weight: 500,
+            data: montserratSemiBold,
+            weight: 600,
             style: 'normal',
           },
           {
             name: 'Montserrat',
-            data: montserratLight,
-            weight: 300,
+            data: montserratRegular,
+            weight: 400,
             style: 'normal',
           },
           // Open Sans fonts for everything else
