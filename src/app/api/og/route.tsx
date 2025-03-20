@@ -163,20 +163,20 @@ export async function GET(req: NextRequest) {
 
     // Load the subsetted Montserrat fonts (for title)
     const montserratMedium = await fetch(
-      new URL('../../../../public/fonts/subset/Montserrat-Medium.subset.ttf', import.meta.url)
+      new URL('../../../../public/fonts/subset/Montserrat-Medium.tiny.ttf', import.meta.url)
     ).then((res) => res.arrayBuffer());
     
     const montserratLight = await fetch(
-      new URL('../../../../public/fonts/subset/Montserrat-Light.subset.ttf', import.meta.url)
+      new URL('../../../../public/fonts/subset/Montserrat-Light.tiny.ttf', import.meta.url)
     ).then((res) => res.arrayBuffer());
 
     // Load the subsetted Open Sans fonts (for everything else)
     const openSansRegular = await fetch(
-      new URL('../../../../public/fonts/subset/OpenSans-Regular.subset.ttf', import.meta.url)
+      new URL('../../../../public/fonts/subset/OpenSans-Regular.tiny.ttf', import.meta.url)
     ).then((res) => res.arrayBuffer());
     
     const openSansSemiBold = await fetch(
-      new URL('../../../../public/fonts/subset/OpenSans-SemiBold.subset.ttf', import.meta.url)
+      new URL('../../../../public/fonts/subset/OpenSans-SemiBold.tiny.ttf', import.meta.url)
     ).then((res) => res.arrayBuffer());
 
     // The currencies to display with their full names
