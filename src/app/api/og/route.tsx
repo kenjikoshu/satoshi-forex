@@ -100,62 +100,42 @@ export async function GET(req: NextRequest) {
     let satsPerEUR = fallbackValues.EUR;
     let satsPerJPY = fallbackValues.JPY;
 
-    // Check if we have valid cached data
-    const now = Date.now();
-    if (dataCache && (now - dataCache.timestamp < CACHE_TTL)) {
-      console.log("Using cached forex data for OG image");
-      satsPerUSD = dataCache.satsPerUSD;
-      satsPerCNY = dataCache.satsPerCNY;
-      satsPerEUR = dataCache.satsPerEUR;
-      satsPerJPY = dataCache.satsPerJPY;
-    } else {
-      console.log("Fetching fresh forex data for OG image");
-      try {
-        // Try with retry mechanism
-        const response = await fetchWithRetry(
-          'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,cny,eur,jpy',
-          { next: { revalidate: 0 } }
-        );
+    // Always fetch fresh data - caching disabled
+    console.log("Fetching fresh forex data for OG image");
+    try {
+      // Try with retry mechanism
+      const response = await fetchWithRetry(
+        'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,cny,eur,jpy'
+      );
+      
+      const data = await response.json();
+      
+      // Calculate SATS per unit (100,000,000 / BTC price in currency)
+      if (data.bitcoin && data.bitcoin.usd) {
+        const calculatedSatsPerUSD = 100000000 / data.bitcoin.usd;
+        const calculatedSatsPerCNY = 100000000 / data.bitcoin.cny;
+        const calculatedSatsPerEUR = 100000000 / data.bitcoin.eur;
+        const calculatedSatsPerJPY = 100000000 / data.bitcoin.jpy;
         
-        const data = await response.json();
-        
-        // Calculate SATS per unit (100,000,000 / BTC price in currency)
-        if (data.bitcoin && data.bitcoin.usd) {
-          const calculatedSatsPerUSD = 100000000 / data.bitcoin.usd;
-          const calculatedSatsPerCNY = 100000000 / data.bitcoin.cny;
-          const calculatedSatsPerEUR = 100000000 / data.bitcoin.eur;
-          const calculatedSatsPerJPY = 100000000 / data.bitcoin.jpy;
-          
-          // Verify data validity before using it
-          if (isValidForexData(
-            calculatedSatsPerUSD, 
-            calculatedSatsPerCNY, 
-            calculatedSatsPerEUR, 
-            calculatedSatsPerJPY
-          )) {
-            // Use the calculated values
-            satsPerUSD = calculatedSatsPerUSD;
-            satsPerCNY = calculatedSatsPerCNY;
-            satsPerEUR = calculatedSatsPerEUR;
-            satsPerJPY = calculatedSatsPerJPY;
-            
-            // Cache the data
-            dataCache = {
-              satsPerUSD,
-              satsPerCNY,
-              satsPerEUR,
-              satsPerJPY,
-              timestamp: now
-            };
-            console.log("Cached new forex data for OG image");
-          } else {
-            console.error("Received invalid forex data, using fallback values");
-          }
+        // Verify data validity before using it
+        if (isValidForexData(
+          calculatedSatsPerUSD, 
+          calculatedSatsPerCNY, 
+          calculatedSatsPerEUR, 
+          calculatedSatsPerJPY
+        )) {
+          // Use the calculated values
+          satsPerUSD = calculatedSatsPerUSD;
+          satsPerCNY = calculatedSatsPerCNY;
+          satsPerEUR = calculatedSatsPerEUR;
+          satsPerJPY = calculatedSatsPerJPY;
+        } else {
+          console.error("Received invalid forex data, using fallback values");
         }
-      } catch (error) {
-        console.error("Error fetching data, using fallback values:", error);
-        // Continue with fallback values
       }
+    } catch (error) {
+      console.error("Error fetching data, using fallback values:", error);
+      // Continue with fallback values
     }
 
     // Format values with appropriate precision
