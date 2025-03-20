@@ -16,12 +16,12 @@ text = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,'-% ()/$
 
 # Font files to subset
 fonts = [
-    # Montserrat fonts for the title only
-    ('Montserrat-Bold.ttf', 'Montserrat-Bold.subset.ttf'),
-    ('Montserrat-Light.ttf', 'Montserrat-Light.subset.ttf'),
+    # Montserrat fonts for the title
+    ('Montserrat-Regular.ttf', 'Montserrat-Regular.tiny.ttf'),
+    ('Montserrat-SemiBold.ttf', 'Montserrat-SemiBold.tiny.ttf'),
     # Open Sans fonts for everything else
-    ('OpenSans-Regular.ttf', 'OpenSans-Regular.subset.ttf'),
-    ('OpenSans-SemiBold.ttf', 'OpenSans-SemiBold.subset.ttf')
+    ('OpenSans-Regular.ttf', 'OpenSans-Regular.tiny.ttf'),
+    ('OpenSans-SemiBold.ttf', 'OpenSans-SemiBold.tiny.ttf')
 ]
 
 for src_filename, dst_filename in fonts:
