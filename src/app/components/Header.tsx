@@ -33,7 +33,7 @@ export default function Header() {
     <header className="w-full py-4 px-6 md:px-8 border-b border-gray-200 dark:border-gray-800 bg-transparent">
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <Link href="/" className="font-montserrat text-xl">
-          <span className={`${resolvedTheme === 'dark' ? 'text-orange-400' : 'text-amber-600'} font-[500]`}>
+          <span className={`${resolvedTheme === 'dark' ? 'text-orange-400' : 'text-orange-600'} font-[500]`}>
             satoshis
           </span>
           <span className={`${resolvedTheme === 'dark' ? 'text-[#EEEEEE]' : 'text-[#111111]'} font-[300]`}>
@@ -45,12 +45,12 @@ export default function Header() {
           <Link 
             href="/convert/usd" 
             className={`
-              font-montserrat text-xl font-[400] 
-              ${resolvedTheme === 'dark' ? 'text-[#EEEEEE] hover:text-gray-300' : 'text-[#111111] hover:text-gray-700'}
+              font-montserrat text-md font-[400] 
+              ${resolvedTheme === 'dark' ? 'text-neutral-400 hover:text-neutral-600' : 'text-neutral-600 hover:text-neutral-400'}
               transition duration-150 ease-in-out
             `}
           >
-            Converter
+            Convert
           </Link>
         )}
       </div>
